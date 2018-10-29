@@ -23,7 +23,8 @@
     "url": "https://github.com/AtomicBlom/minecraft-scripting-toolchain/issues"
   },
   "homepage": "https://github.com/AtomicBlom/minecraft-scripting-toolchain#readme",
-  "devDependencies": {
-    "gulp": "^4.0.0"
+  "dependencies": {
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0"
   }
 }
