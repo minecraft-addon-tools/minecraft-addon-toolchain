@@ -55,7 +55,6 @@ class MinecraftModBuilder {
             stream = stream.pipe(action);
         }        
         const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
-        console.log(destination);
         return stream.pipe(dest(destination));
     }
 
