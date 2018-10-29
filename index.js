@@ -1,11 +1,10 @@
 const {series, parallel, src, dest, watch} = require("gulp");
 const path = require("path");
 const fs = require("fs");
-
+const clean = require("gulp-clean");
 class MinecraftModBuilder {
-    constructor(modName, outDir) {
+    constructor(modName) {
         this._modName = modName;
-        this._outDir = outDir || "./built";
         this._destRoot = path.join(
             process.env["LOCALAPPDATA"],
             "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang"
@@ -17,52 +16,64 @@ class MinecraftModBuilder {
         this.resourcesTasks = [];
         this.installBehaviorTasks = [];
         this.installResourcesTasks = [];
+
+        this.outDir = "./built"
+        this.scriptsDir = "./src/scripts/"
+        this.behaviorDir = "./src/behavior/"
+        this.resourcesDir = "./src/resources/"
     }
 
-    scripts(srcPath, additionalActions) {
-        srcPath = srcPath || "./src/scripts/"
-
-        let stream = src(path.join(srcPath, "*/*"))
-        for (const action of toArray(additionalActions)) {
-            stream = stream.pipe(action());
-        }        
-        return stream.pipe(dest(path.join(this._outDir, "behavior/scripts")));
+    verifyMinecraftExists(cb) {
+        fs.stat(this._destRoot, (err) => {
+            if (!!err) {
+                cb(new Error("Minecraft Windows 10 edition is not installed"))
+            }
+            cb();
+        });
     }
 
-    behavior(srcPath, additionalActions) {
-        srcPath = srcPath || "./src/behavior"
-
-        let stream = src(path.join(srcPath, "**/*"))
-        for (const action of toArray(additionalActions)) {
-            stream = stream.pipe(action);
-        }        
-        return stream.pipe(dest(path.join(this._outDir, "behavior")));
+    cleanOutDir() {
+        return src(this.outDir, { read: false, allowEmpty: true }).pipe(clean());
     }
 
-    resources(srcPath, additionalActions) {
-        srcPath = srcPath || "./src/resources"
-
-        let stream = src(path.join(srcPath, "**/*"))
-        for (const action of toArray(additionalActions)) {
-            stream = stream.pipe(action);
-        }        
-        return stream.pipe(dest(path.join(this._outDir, "resources")));
+    scripts() {
+        let stream = src("*/*", {cwd: this.scriptsDir})
+        stream = augmentPipe(stream, this.scriptTasks);
+        return stream.pipe(dest(path.join(this.outDir, "behavior/scripts")));
     }
 
-    installBehavior(additionalActions) {
-        let stream = src(path.join(this._outDir, "behavior/**/*"))
-        for (const action of toArray(additionalActions)) {
-            stream = stream.pipe(action);
-        }        
+    behavior() {
+        let stream = src("**/*", { cwd: this.behaviorDir })
+        stream = augmentPipe(stream, this.behaviorTasks);
+        return stream.pipe(dest(path.join(this.outDir, "behavior")));
+    }
+
+    resources() {
+        let stream = src("**/*", { cwd: this.resourcesDir })
+        stream = augmentPipe(stream, this.resourcesTasks);
+        return stream.pipe(dest(path.join(this.outDir, "resources")));
+    }
+
+    cleanBehavior() {
+        const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
+        return src(destination, { read: false, allowEmpty: true }).pipe(clean({force: true}));
+    }
+
+    installBehavior() {
+        let stream = src("**/*", {cwd: path.join(this.outDir, "behavior")})
+        stream = augmentPipe(stream, this.installBehaviorTasks);
         const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
         return stream.pipe(dest(destination));
     }
 
-    installResources(additionalActions) {
-        let stream = src(path.join(this._outDir, "resource/**/*"))
-        for (const action of toArray(additionalActions)) {
-            stream = stream.pipe(action);
-        }        
+    cleanResources() {
+        const destination = path.join(this._destRoot, "development_resource_packs", this._modName);
+        return src(destination, { read: false, allowEmpty: true }).pipe(clean({force: true}));
+    }
+
+    installResources() {
+        let stream = src("**/*", {cwd: path.join(this.outDir, "resource")})
+        stream = augmentPipe(stream, this.installResourcesTasks);
         return stream.pipe(dest(path.join(this._destRoot, "development_resource_packs", this._modName)));
     }
 
@@ -71,37 +82,38 @@ class MinecraftModBuilder {
         const tasks = {};
 
         tasks.scripts = function buildScripts() {
-            return builder.scripts(null, builder.scriptTasks);
+            return builder.scripts();
         };
 
         tasks.behavior = function buildBehavior() {
-            return builder.behavior(null, builder.behaviorTasks);
+            return builder.behavior();
         };
 
         tasks.resources = function buildResources() {
-            return builder.resources(null, builder.resourcesTasks);
+            return builder.resources();
         };
 
-        const verifyMinecraftExists = function verifyMinecraftExists(cb) {
-            fs.stat(builder._destRoot, (err, stats) => {
-                if (!!err) {
-                    cb(new Error("Minecraft Windows 10 edition is not installed"))
-                }
-                cb();
-            });
+        tasks.verifyMinecraftExists = function verifyMinecraftExists(cb) {
+            return builder.verifyMinecraftExists(cb);
         }
 
         tasks.install_behaviour = series(
-            verifyMinecraftExists,
+            tasks.verifyMinecraftExists,
+            function cleanBehavior() {
+                return builder.cleanBehavior();
+            },
             function installBehavior() {
-                return builder.installBehavior(builder.installBehaviorTasks);
+                return builder.installBehavior();
             }
         );
 
         tasks.install_resources = series(
-            verifyMinecraftExists,
+            tasks.verifyMinecraftExists,
+            function cleanResources() {
+                return builder.cleanResources();
+            },
             function installResources() {
-                return builder.installBehavior(builder.installResourcesTasks);
+                return builder.installResources();
             }
         );
 
@@ -111,6 +123,12 @@ class MinecraftModBuilder {
             tasks.resources
         );
         
+        tasks.rebuild = series(
+            function clean() {
+                return builder.cleanOutDir();
+            },
+            tasks.build            
+        )
 
         tasks.install = series(
             tasks.build,
@@ -168,6 +186,17 @@ function toArray(collection, options) {
     }
     if (arr.length === 0) return [collection]
     return arr
-  }  
+}
+
+function augmentPipe(stream, additionalActions) {
+    for (const action of toArray(additionalActions)) {
+        if (typeof action === "function") {
+            stream = stream.pipe(action());
+        } else {
+            stream = stream.pipe(action);
+        }
+    }
+    return stream;
+}
 
 module.exports = MinecraftModBuilder;
