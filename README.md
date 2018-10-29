@@ -47,6 +47,24 @@ Next, update your packge.json with appropriate scripts, here are some useful scr
     * monitor for changes on the filesystem
         * automatically rebuilds and deploys the project.
 
+## Conventions
+
+These scripts will assume a certain directory structure by default. These can be overridden by altering properties on the `MinecraftModBuilder` object in your gulpfile.js.
+
+| directory | purpose | config property |
+|-----------|---------|-----------------|
+| .\src\scripts | Any JavaScript/TypeScript/etc files that make up the code | scriptsDir |
+| .\src\behavior | files that are part of the Behaviour | behaviorDir |
+| .\src\resources | files that are part of the resources | resourceDir |
+| .\built | the constructed mcaddon directory | outDir |
+
+an example of changing the build directory would look something like this:
+```javascript
+const MinecraftModBuilder = require("minecraft-scripting-toolchain")
+const modBuilder = new MinecraftModBuilder(<yourmodname>);
+modBuilder.outDir = "./out"
+```
+
 ## Using with TypeScript
 It is recommended if you use TypeScript to use the `minecraft-scripting-types` packge to give better code hints, see [atomicblom/minecraft-script-types](http://github.com/AtomicBlom/minecraft-script-types) for more details. The following steps will assume this is also installed.
 
