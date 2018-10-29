@@ -7,7 +7,22 @@ Helps with some common tasks when building a minecraft mod for Bedrock edition:
 * has extension points to do transpilation
 * (*not implemented*) build a .mcaddon
 
+## Prerequisites
+| Software    | Minimum                                     | Recommended                                               | 
+| ----------- | ------------------------------------------- | --------------------------------------------------------- | 
+| Minecraft   | Minecraft on your Windows 10 device         | Minecraft on your Windows 10 device                       |
+| Storage     | 1.0 GB of free space for text editor, game, and scripts | 3.0 GB of free space for Visual Studio, game, and scripts |
+| Node.js     | 8.x                                         | 10.x                                                      |
+
+
 ## Getting Started
+Ensure you have a package.json file present in your development directory, if you do not, you can create a minimal valid package with the following contents:
+```json
+{
+  "private": "true",
+}
+```
+
 install the package (It's not currently available on NPM, you'll have to use the Github repository)
 ```
 npm install --save-dev github:atomicblom/minecraft-scripting-toolchain#38477e1500f44a964aa97f4cf4bae9f14d35375a
