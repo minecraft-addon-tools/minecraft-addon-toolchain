@@ -84,7 +84,7 @@ class MinecraftModBuilder {
         };
 
         const verifyMinecraftExists = function verifyMinecraftExists(cb) {
-            fs.stat(this._destRoot, (err, stats) => {
+            fs.stat(builder._destRoot, (err, stats) => {
                 if (!!err) {
                     cb(new Error("Minecraft Windows 10 edition is not installed"))
                 }
