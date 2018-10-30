@@ -2,6 +2,8 @@ const {series, parallel, src, dest, watch} = require("gulp");
 const path = require("path");
 const fs = require("fs");
 const clean = require("gulp-clean");
+const del = require("del");
+
 class MinecraftModBuilder {
     constructor(modName) {
         this._modName = modName;
