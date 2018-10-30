@@ -97,8 +97,9 @@ const MinecraftModBuilder = require("minecraft-scripting-toolchain")
 const modBuilder = new MinecraftModBuilder(<yourmodname>);
 
 compileTypeScript = () => ts({
+    module: "ES6" //Must be ES6 because otherwise code gets generated that Minecraft doesn't support
     noImplicitAny: true,
-    "types": [ "minecraft-scripting-types" ] // You won't need this line if you're not using the types
+    types: [ "minecraft-scripting-types" ] // You won't need this line if you're not using the types
 });
 
 modBuilder.scriptTasks = [compileTypeScript];
