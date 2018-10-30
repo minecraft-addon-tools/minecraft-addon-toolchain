@@ -72,7 +72,7 @@ class MinecraftModBuilder {
     }
 
     installResources() {
-        let stream = src("**/*", {cwd: path.join(this.outDir, "resource")})
+        let stream = src("**/*", {cwd: path.join(this.outDir, "resources")})
         stream = augmentPipe(stream, this.installResourcesTasks);
         return stream.pipe(dest(path.join(this._destRoot, "development_resource_packs", this._modName)));
     }
