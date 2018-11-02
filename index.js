@@ -83,6 +83,10 @@ class MinecraftModBuilder {
         const builder = this;
         const tasks = {};
 
+        tasks.clean = function clean() {
+            return builder.cleanOutDir();
+        }
+
         tasks.scripts = function buildScripts() {
             return builder.scripts();
         };
@@ -163,6 +167,7 @@ class MinecraftModBuilder {
         }
 
         tasks.watch = series(
+            tasks.clean,
             tasks.install,
             watchFiles
         )
