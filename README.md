@@ -25,7 +25,7 @@ Ensure you have a package.json file present in your development directory, if yo
 
 install the package (It's not currently available on NPM, you'll have to use the Github repository)
 ```
-npm install --save-dev github:atomicblom/minecraft-scripting-toolchain#38477e1500f44a964aa97f4cf4bae9f14d35375a
+npm install --save-dev github:minecraft-addon-tools/minecraft-scripting-toolchain
 ```
 
 This will automatically install gulp vNext (4.0.0)
@@ -81,7 +81,7 @@ modBuilder.outDir = "./out"
 ```
 
 ## Using with TypeScript
-It is recommended if you use TypeScript to use the `minecraft-scripting-types` packge to give better code hints, see [atomicblom/minecraft-script-types](http://github.com/AtomicBlom/minecraft-script-types) for more details. The following steps will assume this is also installed.
+It is recommended if you use TypeScript to use the `minecraft-scripting-types` packge to give better code hints, see [minecraft-addon-tools/minecraft-script-types](http://github.com/minecraft-addon-tools/minecraft-script-types) for more details. The following steps will assume this is also installed.
 
 Install the prerequisites to get started
 ```
