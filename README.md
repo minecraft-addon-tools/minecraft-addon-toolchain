@@ -69,7 +69,7 @@ These scripts will assume a certain directory structure by default. These can be
 | directory | purpose | config property |
 |-----------|---------|-----------------|
 | .\src\scripts | Any JavaScript/TypeScript/etc files that make up the code | scriptsDir |
-| .\src\behavior | files that are part of the Behaviour | behaviorDir |
+| .\src\behaviors | files that are part of the behaviors | behaviorDir |
 | .\src\resources | files that are part of the resources | resourceDir |
 | .\built | the constructed mcaddon directory | outDir |
 
