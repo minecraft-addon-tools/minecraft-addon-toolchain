@@ -21,7 +21,7 @@ class MinecraftModBuilder {
 
         this.outDir = "./built"
         this.scriptsDir = "./src/scripts/"
-        this.behaviorDir = "./src/behavior/"
+        this.behaviorDir = "./src/behaviors/"
         this.resourcesDir = "./src/resources/"
     }
 
@@ -41,13 +41,13 @@ class MinecraftModBuilder {
     scripts() {
         let stream = src("*/*", {cwd: this.scriptsDir})
         stream = augmentPipe(stream, this.scriptTasks);
-        return stream.pipe(dest(path.join(this.outDir, "behavior/scripts")));
+        return stream.pipe(dest(path.join(this.outDir, "behaviors/scripts")));
     }
 
     behavior() {
         let stream = src("**/*", { cwd: this.behaviorDir })
         stream = augmentPipe(stream, this.behaviorTasks);
-        return stream.pipe(dest(path.join(this.outDir, "behavior")));
+        return stream.pipe(dest(path.join(this.outDir, "behaviors")));
     }
 
     resources() {
@@ -62,7 +62,7 @@ class MinecraftModBuilder {
     }
 
     installBehavior() {
-        let stream = src("**/*", {cwd: path.join(this.outDir, "behavior")})
+        let stream = src("**/*", {cwd: path.join(this.outDir, "behaviors")})
         stream = augmentPipe(stream, this.installBehaviorTasks);
         const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
         return stream.pipe(dest(destination));
@@ -162,7 +162,7 @@ class MinecraftModBuilder {
 
         function watchFiles() {
             watchForUnlink(watch('src/scripts/**/*', series(notify, tasks.scripts, tasks.install_behaviour)));
-            watchForUnlink(watch('src/behavior/**/*', series(notify, tasks.behavior, tasks.install_behaviour)));
+            watchForUnlink(watch('src/behaviors/**/*', series(notify, tasks.behavior, tasks.install_behaviour)));
             watchForUnlink(watch('src/resources/**/*', series(notify, tasks.resources, tasks.install_resources)));
         }
 
