@@ -25,7 +25,7 @@ Ensure you have a package.json file present in your development directory, if yo
 
 install the package (It's not currently available on NPM, you'll have to use the Github repository)
 ```
-npm install --save-dev github:minecraft-addon-tools/minecraft-scripting-toolchain
+npm install --save-dev minecraft-scripting-toolchain
 ```
 
 This will automatically install gulp vNext (4.0.0)

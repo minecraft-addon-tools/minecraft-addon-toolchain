@@ -6,10 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AtomicBlom/minecraft-scripting-toolchain.git"
-  },
+  "repository": "github:minecraft-addon-tools/minecraft-scripting-toolchain.git",
   "keywords": [
     "minecraft",
     "bedrock",
@@ -20,9 +17,9 @@
   "author": "Steven Blom",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AtomicBlom/minecraft-scripting-toolchain/issues"
+    "url": "https://github.com/minecraft-addon-tools/minecraft-scripting-toolchain/issues"
   },
-  "homepage": "https://github.com/AtomicBlom/minecraft-scripting-toolchain#readme",
+  "homepage": "https://github.com/minecraft-addon-tools/minecraft-scripting-toolchain#readme",
   "dependencies": {
     "del": "^3.0.0",
     "gulp": "^4.0.0",
