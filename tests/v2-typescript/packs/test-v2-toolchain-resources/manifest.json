@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "ToolchainTest-Resources",
+    "description": "Modifying the Toolchain",
+    "uuid": "cffa6108-f9af-4c75-bb23-e51007611376",
+    "version": [
+      1,
+      0,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "description": "Resources for ToolchainTest",
+      "type": "resources",
+      "uuid": "ab50e801-62b1-4c80-950c-303d5fa2e741",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

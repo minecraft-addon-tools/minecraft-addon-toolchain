@@ -35,7 +35,7 @@ This will automatically install gulp vNext (4.0.0)
 use the following as a template for your gulpfile.js, replacing `<yourmodname>` with the name of your mod, which will be used on the filesystem to identify your mod
 
 ```javascript
-const MinecraftModBuilder = require("minecraft-scripting-toolchain")
+const MinecraftModBuilder = require("minecraft-scripting-toolchain/v2")
 
 const modBuilder = new MinecraftModBuilder(<yourmodname>);
 module.exports = modBuilder.configureEverythingForMe();
@@ -43,18 +43,18 @@ module.exports = modBuilder.configureEverythingForMe();
 
 The MinecraftModBuilder object can be used to create your own tasks, but the default tasks configured by `configureEverythingForMe()` should be sufficient for simple mods.
 
-Next, update your packge.json with appropriate scripts, here are some useful scripts
+Next, update your package.json with appropriate scripts, here are some useful scripts
 ```json
   "scripts": {
     "build": "gulp build",
-    "installmod": "gulp install",
+    "install": "gulp install",
     "rebuild": "gulp rebuild",
     "watch": "gulp watch"
   },
 ```
 
 * use **npm run build** to create the directory structure for a .mcaddon
-* use **npm run installmod** to install the mod into Minecraft for Windows 10
+* use **npm run instal** to install the addon into Minecraft for Windows 10
 * use **npm run rebuild** to clean the build directory and rebuild it
 * use **npm run watch** to:
     * build the project
@@ -68,10 +68,11 @@ These scripts will assume a certain directory structure by default. These can be
 
 | directory | purpose | config property |
 |-----------|---------|-----------------|
-| .\src\scripts | Any JavaScript/TypeScript/etc files that make up the code | scriptsDir |
-| .\src\behaviors | files that are part of the behaviors | behaviorDir |
-| .\src\resources | files that are part of the resources | resourceDir |
+| .\src | files that are part of the behaviors | sourceDir |
+| .\src\behaviors | files that are part of the behaviors |  |
+| .\src\resources | files that are part of the resources |  |
 | .\built | the constructed mcaddon directory | outDir |
+| .\out-src | a temporary staging area for scripts being compiled | scriptOutDir |
 
 an example of changing the build directory would look something like this:
 ```javascript
@@ -95,16 +96,14 @@ const ts = require("gulp-typescript");
 const MinecraftModBuilder = require("minecraft-scripting-toolchain")
 
 const modBuilder = new MinecraftModBuilder(<yourmodname>);
-
-compileTypeScript = () => ts({
-    module: "ES6" //Must be ES6 because otherwise code gets generated that Minecraft doesn't support
-    noImplicitAny: true,
-    types: [ "minecraft-scripting-types" ] // You won't need this line if you're not using the types
+modBuilder.tasks.push({
+    condition: '*.ts',
+    task: ts.createProject({
+        module: "ES6",
+        noImplicitAny: true,
+        target: "ES6"
+    })
 });
-
-modBuilder.scriptTasks = [compileTypeScript];
 
 module.exports = modBuilder.configureEverythingForMe();
 ```
-
-Note that compileTypeScript is a function, not just a call to `ts` failing to do this will result in gulp and gulp-typescript trying to re-use a completed set of files and failing.

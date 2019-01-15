@@ -1,0 +1,26 @@
+{
+  "name": "test-toolchain-v2-typescript",
+  "private": "true",
+  "scripts": {
+    "build": "gulp build",
+    "rebuild": "gulp rebuild",
+    "watch": "gulp watch",
+    "installmod": "gulp install",
+    "package": "gulp package",
+    "uninstallmod": "gulp uninstall"
+  },
+  "devDependencies": {
+    "minecraft-scripting-types-client": "^0.2.0",
+    "minecraft-scripting-types-server": "^0.2.0",
+    "minecraft-addon-toolchain": "1.0.0-alpha.1",
+    "minecraft-addon-toolchain-typescript": "1.0.0-alpha.1",
+    "minecraft-addon-toolchain-browserify": "1.0.0-alpha.1",
+    "minecraft-addon-toolchain-terser": "1.0.0-alpha.1"
+  },
+  "dependencies": {
+    "gulp": "^4.0.0"
+  },
+  "packages": [
+    
+  ]
+}

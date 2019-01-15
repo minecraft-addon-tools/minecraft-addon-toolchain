@@ -1,0 +1,4 @@
+# Dependency directories
+node_modules/
+./tests/**/out/
+./tests/v1-typescript/build

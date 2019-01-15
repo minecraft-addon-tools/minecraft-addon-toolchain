@@ -1,0 +1,39 @@
+{
+  "name": "minecraft-addon-toolchain",
+  "version": "1.0.0-alpha.1",
+  "description": "Productivity tools for making Minecraft Bedrock Edition add-ons",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "github:minecraft-addon-tools/minecraft-scripting-toolchain.git",
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "scripting",
+    "api",
+    "gulp"
+  ],
+  "author": "Steven Blom",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/minecraft-addon-tools/minecraft-scripting-toolchain/issues"
+  },
+  "homepage": "https://minecraft-addon-tools.github.io/",
+  "dependencies": {
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0",
+    "gulp-if": "^2.0.2",
+    "gulp-ignore": "^2.0.2",
+    "gulp-match": "^1.0.3",
+    "gulp-tap": "^1.0.1",
+    "gulp-zip": "^4.2.0",
+    "gulplog": "^1.0.0",
+    "normalize-path": "^3.0.0",
+    "pump": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.11.1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "minecraft-addon-toolchain-terser",
+  "version": "1.0.0-alpha.1",
+  "description": "compresses and minifies javascript prior to packaging",
+  "main": "index.js",
+  "repository": "github:minecraft-addon-tools/minecraft-scripting-toolchain.git",
+  "bugs": {
+    "url": "https://github.com/minecraft-addon-tools/minecraft-scripting-toolchain/issues"
+  },
+  "homepage": "https://minecraft-addon-tools.github.io/",
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "scripting",
+    "api",
+    "gulp",
+    "uglify"
+  ],
+  "author": "Steven Blom",
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "^4.0.0",
+    "gulp-terser": "^1.1.7",
+    "gulplog": "^1.0.0",
+    "minecraft-addon-toolchain": "1.0.0-alpha.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.11.1"
+  }
+}
