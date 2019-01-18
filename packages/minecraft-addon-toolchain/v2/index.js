@@ -1,3 +1,4 @@
+/// <reference path="../index.d.ts" />
 "use strict";
 
 const { series, parallel, src, dest, watch } = require("gulp");
@@ -24,6 +25,7 @@ class MinecraftAddonBuilder {
         this.gameStateDir = "games/com.mojang";
 
         // script task factories
+        /** @type IPack[] */
         this.packs = [];
 
         this.bundleDir = "./out/bundled";
@@ -81,21 +83,30 @@ class MinecraftAddonBuilder {
         });
     }
 
-    determinePackTypes(done) {
-        this.packs.length = 0;
+    /**
+     * 
+     * @param {string} location 
+     * @param {(packs: IPack[]) => any} done 
+     */
+    determinePacksInLocation(location, done) {
+        /** {@type} IPack[] */
+        const packs = [];
         pump(
             [
-                src("**/manifest.json", {cwd: this.sourceDir}),
+                src("**/manifest.json", {cwd: location}),
                 tap(file => {
                     const manifest = JSON.parse(file.contents);
+                    /** {@type} IPack */
                     const pack = {
                         path: path.dirname(file.path),
-                        relativePath: path.relative(this.sourceDir, path.dirname(file.path)),
+                        relativePath: path.relative(location, path.dirname(file.path)),
                         name: "No name specified",
                         types: []
                     };
                     if (manifest && manifest.header) {
                         pack.name = manifest.header.name;
+                        pack.uuid = manifest.header.uuid;
+                        pack.version = manifest.header.version;
                     }
                     if (manifest && Array.isArray(manifest.modules)) {
                         for (const module of manifest.modules) {
@@ -109,14 +120,22 @@ class MinecraftAddonBuilder {
                     }
 
                     if (pack.types.length > 0) {
-                        this.packs.push(pack);
+                        packs.push(pack);
                     }
                 })
             ],
             () => {
-                done();
+                done(packs);
             }
         );
+    }
+
+    determinePacks(done) {
+        this.packs.length = 0;
+        this.determinePacksInLocation(this.sourceDir, (packs) => {
+            this.packs.push(...packs);
+            done();
+        });
     }
 
     /**
@@ -196,14 +215,29 @@ class MinecraftAddonBuilder {
     }
 
     cleanBehavior (done) {
+        log.info("Cleaning installed behaviour packs");
         const destination = path.join(this.gameDataDir, "development_behavior_packs");
-        pump(
-            [
-                src(destination, { read: false, allowEmpty: true }),
-                clean( {force: true} )
-            ],
-            done
-        );
+        this.determinePacksInLocation(destination, (installedPacks) => {
+
+            const packsToRemove = installedPacks
+                .filter(ip => this.packs.find(p => p.uuid === ip.uuid))
+                .map(ip => ip.relativePath);
+
+            if (packsToRemove.length === 0) {
+                done();
+                return;
+            }
+            pump(
+                [
+                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    tap(file => {
+                        log.info(`\tRemoving behavior pack ${path.relative(destination, file.path)}`);
+                    }),
+                    clean( {force: true} )
+                ],
+                done
+            );
+        });
     }
 
     installBehavior (done) {
@@ -225,19 +259,29 @@ class MinecraftAddonBuilder {
             );
         },
         done);
-
-        
     }
 
     cleanResources (done) {
-        const destination = path.join(this.gameDataDir, "development_resource_packs", this._modName);
-        pump(
-            [
-                src(destination, { read: false, allowEmpty: true }),
-                clean({ force: true })
-            ],
-            done
-        );
+        log.info("Cleaning installed resource packs");
+        const destination = path.join(this.gameDataDir, "development_resource_packs");
+        this.determinePacksInLocation(destination, (installedPacks) => {
+            const packsToRemove = installedPacks.filter(ip => this.packs.find(p => p.uuid === ip.uuid))
+                .map(ip => ip.relativePath);
+            if (packsToRemove.length === 0) {
+                done();
+                return;
+            }
+            pump(
+                [
+                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    tap(file => {
+                        log.info(`\tRemoving resource pack ${path.relative(destination, file.path)}`);
+                    }),
+                    clean( {force: true} )
+                ],
+                done
+            );
+        });
     }
 
     installResources (done) {
@@ -333,8 +377,8 @@ class MinecraftAddonBuilder {
             }
         );
 
-        tasks.determinePackTypes = function determinePackTypes (done) {
-            return builder.determinePackTypes(done);
+        tasks.determinePacks = function determinePacks (done) {
+            return builder.determinePacks(done);
         };
 
         tasks.buildSource = function buildSource(done) {
@@ -342,7 +386,7 @@ class MinecraftAddonBuilder {
         };
 
         tasks.build = series(
-            tasks.determinePackTypes,
+            tasks.determinePacks,
             tasks.buildSource
         );
 
@@ -364,7 +408,7 @@ class MinecraftAddonBuilder {
         );
 
         tasks.install = series(
-            tasks.determinePackTypes,
+            tasks.determinePacks,
             tasks.build,
             parallel(
                 tasks.installBehaviour,

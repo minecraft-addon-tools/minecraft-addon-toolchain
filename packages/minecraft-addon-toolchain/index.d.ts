@@ -3,6 +3,15 @@ interface IPlugin {
     addDefaultTasks?: (gulpTasks: any) => void;
 }
 
+interface IPack {
+    path: string;
+    relativePath: string;
+    name: string;
+    uuid: string;
+    version: [number, number, number];
+    types: ["behavior" | "resources"];
+}
+
 interface ITask {
     condition: string | RegExp;
     preventDefault?: boolean;
