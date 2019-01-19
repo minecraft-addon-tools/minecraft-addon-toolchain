@@ -18,7 +18,7 @@ TypeScript support is a language transformation and should be one of the first p
 const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const TypeScriptSupport = require("minecraft-addon-toolchain-typescript");
 
-const builder = new MinecraftAddonBuilder(<yourmodname>);
+const builder = new MinecraftAddonBuilder(<youraddonname>);
 builder.addPlugin(new TypeScriptSupport());
 
 module.exports = builder.configureEverythingForMe();
@@ -38,7 +38,7 @@ You can override the settings passed to the TypeScript compiler by changing the 
 const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const TypeScriptSupport = require("minecraft-addon-toolchain-typescript");
 
-const builder = new MinecraftAddonBuilder(<yourmodname>);
+const builder = new MinecraftAddonBuilder(<youraddonname>);
 const typeScriptSupport = new TypeScriptSupport();
 /// Modify the settings here.
 //typeScriptSupport.settings
