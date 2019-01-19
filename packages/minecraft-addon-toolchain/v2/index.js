@@ -24,6 +24,8 @@ class MinecraftAddonBuilder {
         this.platformRoot = null;
         this.gameStateDir = "games/com.mojang";
 
+        this.gameDataDir = process.env.BEDROCK_DATA_DIR || null;
+
         // script task factories
         /** @type IPack[] */
         this.packs = [];
