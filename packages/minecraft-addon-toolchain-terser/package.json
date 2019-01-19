@@ -1,6 +1,6 @@
 {
   "name": "minecraft-addon-toolchain-terser",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "compresses and minifies javascript prior to packaging",
   "main": "index.js",
   "repository": "github:minecraft-addon-tools/minecraft-scripting-toolchain.git",
@@ -22,7 +22,7 @@
     "gulp": "^4.0.0",
     "gulp-terser": "^1.1.7",
     "gulplog": "^1.0.0",
-    "minecraft-addon-toolchain": "^1.0.0-alpha.2"
+    "minecraft-addon-toolchain": "^1.0.0-alpha.3"
   },
   "devDependencies": {
     "eslint": "^5.11.1"
