@@ -10,7 +10,7 @@ npm install --save-dev minecraft-addon-toolchain-terser
 
 ### Adding to the toolchain
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const TerserSupport = require("minecraft-addon-toolchain-terser");
 
 const builder = new MinecraftAddonBuilder(<yourmodname>);

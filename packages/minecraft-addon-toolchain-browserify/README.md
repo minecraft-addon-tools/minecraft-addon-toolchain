@@ -10,7 +10,7 @@ npm install --save-dev minecraft-addon-toolchain-browserify
 
 ### Adding to the toolchain
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const BrowserifySupport = require("minecraft-addon-toolchain-browserify");
 
 const builder = new MinecraftAddonBuilder(<yourmodname>);
@@ -47,7 +47,7 @@ system.update = function() {
 You can override the settings passed to Babelify any of the following settings the BrowserifySupport object.
 
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const BrowserifySupport = require("minecraft-addon-toolchain-browserify");
 
 const builder = new MinecraftAddonBuilder(<yourmodname>);

@@ -15,7 +15,7 @@ npm install --save-dev minecraft-scripting-types
 TypeScript support is a language transformation and should be one of the first plugins added. It must come before any bundling plugins, such as Browserify.
 
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const TypeScriptSupport = require("minecraft-addon-toolchain-typescript");
 
 const builder = new MinecraftAddonBuilder(<yourmodname>);
@@ -35,7 +35,7 @@ TypeScript does not come with support for multi-file editing by default due to t
 You can override the settings passed to the TypeScript compiler by changing the `settings` field of the TypeScriptSupport object.
 
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const TypeScriptSupport = require("minecraft-addon-toolchain-typescript");
 
 const builder = new MinecraftAddonBuilder(<yourmodname>);

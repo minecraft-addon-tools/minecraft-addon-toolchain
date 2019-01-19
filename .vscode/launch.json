@@ -5,52 +5,52 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Test Build (TypeScript/Browserify V2)",
+            "name": "Test Build (TypeScript/Browserify V1)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/tests/v2-typescript/node_modules/gulp/bin/gulp.js",
+            "program": "${workspaceRoot}/tests/v1-typescript/node_modules/gulp/bin/gulp.js",
             "stopOnEntry": false,
             "args": [ "build" ],
-            "cwd": "${workspaceRoot}/tests/v2-typescript",
+            "cwd": "${workspaceRoot}/tests/v1-typescript",
             "runtimeArgs": [
                 "--nolazy"
             ],
             "console": "internalConsole",
         },
         {
-            "name": "Test Watch (TypeScript/Browserify V2)",
+            "name": "Test Watch (TypeScript/Browserify V1)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/tests/v2-typescript/node_modules/gulp/bin/gulp.js",
+            "program": "${workspaceRoot}/tests/v1-typescript/node_modules/gulp/bin/gulp.js",
             "stopOnEntry": false,
             "args": [ "watch" ],
-            "cwd": "${workspaceRoot}/tests/v2-typescript",
+            "cwd": "${workspaceRoot}/tests/v1-typescript",
             "runtimeArgs": [
                 "--nolazy"
             ],
             "console": "internalConsole",
         },
         {
-            "name": "Test Package (TypeScript/Browserify V2)",
+            "name": "Test Package (TypeScript/Browserify V1)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/tests/v2-typescript/node_modules/gulp/bin/gulp.js",
+            "program": "${workspaceRoot}/tests/v1-typescript/node_modules/gulp/bin/gulp.js",
             "stopOnEntry": false,
             "args": [ "package" ],
-            "cwd": "${workspaceRoot}/tests/v2-typescript",
+            "cwd": "${workspaceRoot}/tests/v1-typescript",
             "runtimeArgs": [
                 "--nolazy"
             ],
             "console": "internalConsole",
         },
         {
-            "name": "Test Install (TypeScript/Browserify V2)",
+            "name": "Test Install (TypeScript/Browserify V1)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/tests/v2-typescript/node_modules/gulp/bin/gulp.js",
+            "program": "${workspaceRoot}/tests/v1-typescript/node_modules/gulp/bin/gulp.js",
             "stopOnEntry": false,
             "args": [ "install" ],
-            "cwd": "${workspaceRoot}/tests/v2-typescript",
+            "cwd": "${workspaceRoot}/tests/v1-typescript",
             "runtimeArgs": [
                 "--nolazy"
             ],

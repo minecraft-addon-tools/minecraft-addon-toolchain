@@ -7,11 +7,11 @@ Helps with some common tasks when building a minecraft mod for Bedrock edition:
 * has extension points to do transpilation
 
 ## Prerequisites
-| Software    | Minimum                                     | Recommended                                               | 
-| ----------- | ------------------------------------------- | --------------------------------------------------------- | 
-| Minecraft   | Minecraft Bedrock Edition Beta  | Minecraft Bedrock Edition Beta on your Windows 10 device                       |
-| Storage     | 1.0 GB of free space for text editor, game, and scripts | 3.0 GB of free space for Visual Studio, game, and scripts |
-| Node.js     | 8.x                                         | 10.x                                                      |
+| Software  | Minimum                                                 | Recommended                                               |
+| --------- | ------------------------------------------------------- | --------------------------------------------------------- |
+| Minecraft | Minecraft Bedrock Edition Beta                          | Minecraft Bedrock Edition Beta on your Windows 10 device  |
+| Storage   | 1.0 GB of free space for text editor, game, and scripts | 3.0 GB of free space for Visual Studio, game, and scripts |
+| Node.js   | 8.x                                                     | 10.x                                                      |
 
 Scripting in Minecraft is currently only officially supported on Windows 10 Bedrock Edition Beta, however there have been reports that users have been able to use alternative launchers to get scripting working on other platforms, and although the toolchain attempts to support Linux, Mac OS and Android, they are currently untested and support for these platforms is limited. (I am happy to take PRs to improve the experience)
 
@@ -36,12 +36,12 @@ This will automatically install gulp vNext (4.0.0)
 
 ## Create a gulpfile.js gulp configuration
 
-use the following as a template for your gulpfile.js, replacing `<yourmodname>` with the name of your mod, which will be used on the filesystem to identify your mod
+use the following as a template for your gulpfile.js, replacing `<youraddonname>` with the name of your mod, which will be used on the filesystem to identify your mod
 
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 
-const builder = new MinecraftAddonBuilder(<yourmodname>);
+const builder = new MinecraftAddonBuilder(<youraddonname>);
 module.exports = modBuilder.configureEverythingForMe();
 ```
 
@@ -70,17 +70,17 @@ Next, update your package.json with appropriate scripts, here are some useful sc
 
 These scripts will assume a certain directory structure by default. These can be overridden by altering properties on the `MinecraftModBuilder` object in your gulpfile.js.
 
-| directory | purpose | config property |
-|-----------|---------|-----------------|
-| .\packs | place a directory in here for each pack you have. The type of the pack will be determined by it's `manifest.json` file | sourceDir |
-| .\out\bundled | the constructed pack directories will be assembled here, ready for deployment into Minecraft | bundleDir |
-| .\out\packaged | constructed .mcpack and .mcaddon files will be placed here | packageDir |
+| directory      | purpose                                                                                                                | config property |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| .\packs        | place a directory in here for each pack you have. The type of the pack will be determined by it's `manifest.json` file | sourceDir       |
+| .\out\bundled  | the constructed pack directories will be assembled here, ready for deployment into Minecraft                           | bundleDir       |
+| .\out\packaged | constructed .mcpack and .mcaddon files will be placed here                                                             | packageDir      |
 
 an example of changing the build directory would look something like this:
 ```javascript
-const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v2");
+const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 
-const builder = new MinecraftAddonBuilder(<yourmodname>);
+const builder = new MinecraftAddonBuilder(<youraddonname>);
 builder.bundleDir = "./bundle";
 builder.packageDir = "./package";
 ```
@@ -90,8 +90,8 @@ We provide the following plugins.
 
 Because plugins insert themselves into the toolchain, their order is dependent. Refer to their individual read me files for installation and usage.
 
-| NPM package | Purpose | Readme |
-| ----------- | ------- | ------ |
-| minecraft-addon-toolchain-typescript | Adds support for TypeScript | [TypeScript Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-typescript/README.md) |
-| minecraft-addon-toolchain-browserify | Adds support for modern JavaScript features, especially module loading and multi-file projects | [Browserify Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-browserify/README.md) |
-| minecraft-addon-toolchain-terser | Adds support for minifying and obfuscating JavaScript when building `.mcpack` and `.mcaddon` files | [Terser Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-terser/README.md)
+| NPM package                          | Purpose                                                                                            | Readme                                                                                                                                                              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| minecraft-addon-toolchain-typescript | Adds support for TypeScript                                                                        | [TypeScript Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-typescript/README.md) |
+| minecraft-addon-toolchain-browserify | Adds support for modern JavaScript features, especially module loading and multi-file projects     | [Browserify Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-browserify/README.md) |
+| minecraft-addon-toolchain-terser     | Adds support for minifying and obfuscating JavaScript when building `.mcpack` and `.mcaddon` files | [Terser Plugin read me](https://github.com/minecraft-addon-tools/minecraft-addon-toolchain/blob/master/packages/minecraft-addon-toolchain-terser/README.md)         |

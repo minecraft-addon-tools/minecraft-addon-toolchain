@@ -1,4 +1,4 @@
-/// <reference types="minecraft-addon-toolchain/v2" />
+/// <reference types="minecraft-addon-toolchain/v1" />
 const { series, src, dest } = require("gulp");
 
 const tap = require("gulp-tap");
@@ -43,7 +43,7 @@ class BrowserifySupport {
     }
 
     set builder(builder) {
-        if (builder._version < 2) {
+        if (builder._version < 1) {
             throw new Error("browserify support requires using a minecraft-addon-toolchain with at least version 2 or higher");
         }
         this._builder = builder;

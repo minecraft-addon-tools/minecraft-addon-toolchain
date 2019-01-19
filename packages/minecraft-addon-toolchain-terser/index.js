@@ -1,5 +1,9 @@
+/// <reference types="minecraft-addon-toolchain/v1" />
 const terser = require("gulp-terser");
 
+/**
+ * @type{IPlugin}
+ */
 class UglifySupport {
     constructor() {
         this.createMCPackTasks = [
@@ -11,7 +15,7 @@ class UglifySupport {
     }
 
     set builder(builder) {
-        if (builder._version < 2) {
+        if (builder._version < 1) {
             throw new Error("terser support requires using a minecraft-addon-toolchain with at least version 2 or higher");
         }
     }

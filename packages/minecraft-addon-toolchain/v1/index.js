@@ -1,182 +1,457 @@
-const {series, parallel, src, dest, watch} = require("gulp");
+/// <reference path="./index.d.ts" />
+"use strict";
+
+const { series, parallel, src, dest, watch } = require("gulp");
 const path = require("path");
 const fs = require("fs");
 const clean = require("gulp-clean");
-const del = require("del");
+const gulpIf = require("gulp-if");
+const tap = require("gulp-tap");
 const log = require("gulplog");
+const pump = require("pump");
+const os = require("os");
+const exclude = require("gulp-ignore");
+const normalize = require("normalize-path");
+const zip = require("gulp-zip");
 
-class MinecraftModBuilder {
-    constructor(modName) {
-        this._version = 1;
+class MinecraftAddonBuilder {
+    constructor (modName) {
+        this._version = 2;
         this._modName = modName;
-        this._destRoot = path.join(
-            process.env["LOCALAPPDATA"],
-            "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang"
-        );
+        /** @type IPlugin[] */
+        this._plugins = [];
 
-        //script task factories
-        this.scriptTasks = []; 
-        this.behaviorTasks = [];     
-        this.resourcesTasks = [];
-        this.installBehaviorTasks = [];
-        this.installResourcesTasks = [];
+        this.platformRoot = null;
+        this.gameStateDir = "games/com.mojang";
 
-        this.outDir = "./built";
-        this.scriptsDir = "./src/scripts/";
-        this.behaviorDir = "./src/behaviors/";
-        this.resourcesDir = "./src/resources/";
+        this.gameDataDir = process.env.BEDROCK_DATA_DIR || null;
 
-        log.warn("------------");
-        log.warn("You are using the older V1 version of the toolchain.");
-        log.warn("It is recommended that you update to the latest version. Please see the upgrade notes for details");
-        log.warn("https://minecraft-addon-tools.github.io/docs/Toolchain/upgrade-notes");
-        log.warn("------------");
+        // script task factories
+        /** @type IPack[] */
+        this.packs = [];
+
+        this.bundleDir = "./out/bundled";
+        this.packageDir = "./out/packaged";
+        this.sourceDir = "./packs";
     }
 
-    verifyMinecraftExists(done) {
-        fs.stat(this._destRoot, (err) => {
+    addPlugin(plugin) {
+        plugin.builder = this;
+        this._plugins.push(plugin);
+    }
+
+    determineMinecraftDataDirectory (done) {
+        if (this.gameDataDir) {
+            done();
+            return;
+        }
+        if (!this.platformRoot) {
+            switch (os.platform()) {
+            case "win32":
+                this.platformRoot = path.join(
+                    process.env["LOCALAPPDATA"],
+                    "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
+                );
+                break;
+            case "linux":
+                this.platformRoot = path.resolve("~/.local/share/mcpelauncher");
+                break;
+            case "darwin":
+                this.platformRoot = path.resolve("~/Library/Application Support/mcpelauncher");
+                break;
+            case "android":
+                this.platformRoot = path.resolve("~/storage/shared/");
+                break;
+            default:
+                done(new Error("Unexpected platform, please set platformRoot manually"));
+                return;
+            }
+        }
+
+        if (!this.platformRoot) {
+            done(new Error("Unable to determine platform data storage directory for minecraft"));
+            return;
+        }
+
+        this.gameDataDir = path.join(this.platformRoot, this.gameStateDir);
+        done();
+    }
+
+    verifyMinecraftDataDirExists (done) {
+        fs.stat(this.gameDataDir, (err) => {
             if (err) {
-                done(new Error("Minecraft Windows 10 edition is not installed"));
+                done(new Error("Minecraft Bedrock edition's data directory is not available: " + this.gameDataDir));
             }
             done();
         });
     }
 
-    cleanOutDir() {
-        return src(this.outDir, { read: false, allowEmpty: true }).pipe(clean());
+    /**
+     * 
+     * @param {string} location 
+     * @param {(packs: IPack[]) => any} done 
+     */
+    determinePacksInLocation(location, done) {
+        /** {@type} IPack[] */
+        const packs = [];
+        pump(
+            [
+                src("**/manifest.json", {cwd: location}),
+                tap(file => {
+                    const manifest = JSON.parse(file.contents);
+                    /** {@type} IPack */
+                    const pack = {
+                        path: path.dirname(file.path),
+                        relativePath: path.relative(location, path.dirname(file.path)),
+                        name: "No name specified",
+                        types: []
+                    };
+                    if (manifest && manifest.header) {
+                        pack.name = manifest.header.name;
+                        pack.uuid = manifest.header.uuid;
+                        pack.version = manifest.header.version;
+                    }
+                    if (manifest && Array.isArray(manifest.modules)) {
+                        for (const module of manifest.modules) {
+                            if (module.type === "client_data" || module.type === "data") {
+                                pack.types.push("behavior");
+                            }
+                            if (module.type === "resources") {
+                                pack.types.push("resources");
+                            }
+                        }
+                    }
+
+                    if (pack.types.length > 0) {
+                        packs.push(pack);
+                    }
+                })
+            ],
+            () => {
+                done(packs);
+            }
+        );
     }
 
-    scripts() {
-        let stream = src("*/*", {cwd: this.scriptsDir});
-        stream = augmentPipe(stream, this.scriptTasks);
-        return stream.pipe(dest(path.join(this.outDir, "behaviors/scripts")));
+    /**
+     * 
+     * @param {string | null} type optional, either "resources" or "behavior". defaults to both.
+     * @param {*} action  the action to perform.
+     * @param {*} done  a callback to denote when the operations are complete.
+     */
+    foreachPack(type, action, done) {
+        if (typeof type === "function") {
+            done = action;
+            action = type;
+            type = undefined;
+        }
+        let packs = [...this.packs];
+        if (type) {
+            packs = packs.filter(p => !type || p.types.some(t => t === type));
+        }
+
+        const tasks = packs.map(p => (taskDone) => {
+            return action(p, taskDone); 
+        });
+
+        if (tasks.length === 0) {
+            log.error("No packs found");
+            done();
+            return;
+        }
+
+        return series(
+            series(...tasks),
+            (seriesDone) => {
+                seriesDone();
+                done();
+            }
+        )();
     }
 
-    behavior() {
-        let stream = src("**/*", { cwd: this.behaviorDir });
-        stream = augmentPipe(stream, this.behaviorTasks);
-        return stream.pipe(dest(path.join(this.outDir, "behaviors")));
+    /**
+     * 
+     * @param {(plugin: IPlugin) => ITask[] | null} selector 
+     * @returns {NodeJS.ReadWriteStream[]}
+     */
+    getTasks(selector) {
+        return this._plugins
+            .map(plugin => selector(plugin) || [])
+            .reduce((p, c) => p.concat(c), [])
+            .map(action => {
+                const actions = [
+                    gulpIf(action.condition, action.task()),
+                ];
+                if (action.preventDefault) {
+                    actions.push(exclude(action.condition));
+                }
+                return actions;
+            }
+            )
+            .reduce((p, c) => p.concat(c), []);
     }
 
-    resources() {
-        let stream = src("**/*", { cwd: this.resourcesDir });
-        stream = augmentPipe(stream, this.resourcesTasks);
-        return stream.pipe(dest(path.join(this.outDir, "resources")));
+    determinePacks(done) {
+        this.packs.length = 0;
+        this.determinePacksInLocation(this.sourceDir, (packs) => {
+            this.packs.push(...packs);
+            done();
+        });
     }
 
-    cleanBehavior() {
-        const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
-        return src(destination, { read: false, allowEmpty: true }).pipe(clean({force: true}));
+    cleanOutDir(done) {
+        pump(
+            [
+                src(this.bundleDir, { read: false, allowEmpty: true }),
+                clean()
+            ],
+            done
+        );
     }
 
-    installBehavior() {
-        let stream = src("**/*", {cwd: path.join(this.outDir, "behaviors")});
-        stream = augmentPipe(stream, this.installBehaviorTasks);
-        const destination = path.join(this._destRoot, "development_behavior_packs", this._modName);
-        return stream.pipe(dest(destination));
+    source (done) {
+        this.foreachPack(null, (pack, packDone) => {
+            log.info(`build ${pack.name} - ${path.join(pack.relativePath, "./**/*")}`);
+            
+            return pump(
+                [
+                    src(path.join(pack.relativePath, "./**/*"), { cwd: this.sourceDir }),
+                    ...this.getTasks((plugin) => plugin.sourceTasks),
+                    // tap(file => {
+                    //     log.info(file.path);
+                    // }),
+                    dest(this.bundleDir)
+                ],
+                packDone
+            );
+        },
+        done);
     }
 
-    cleanResources() {
-        const destination = path.join(this._destRoot, "development_resource_packs", this._modName);
-        return src(destination, { read: false, allowEmpty: true }).pipe(clean({force: true}));
+    cleanBehavior (done) {
+        log.info("Cleaning installed behaviour packs");
+        const destination = path.join(this.gameDataDir, "development_behavior_packs");
+        this.determinePacksInLocation(destination, (installedPacks) => {
+
+            const packsToRemove = installedPacks
+                .filter(ip => this.packs.find(p => p.uuid === ip.uuid))
+                .map(ip => ip.relativePath);
+
+            if (packsToRemove.length === 0) {
+                done();
+                return;
+            }
+            pump(
+                [
+                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    tap(file => {
+                        log.info(`\tRemoving behavior pack ${path.relative(destination, file.path)}`);
+                    }),
+                    clean( {force: true} )
+                ],
+                done
+            );
+        });
     }
 
-    installResources() {
-        let stream = src("**/*", {cwd: path.join(this.outDir, "resources")});
-        stream = augmentPipe(stream, this.installResourcesTasks);
-        return stream.pipe(dest(path.join(this._destRoot, "development_resource_packs", this._modName)));
+    installBehavior (done) {
+        log.info("Installing behaviour packs");
+        return this.foreachPack("behavior", (pack, packDone) => {
+            const destination = path.join(this.gameDataDir, "development_behavior_packs");
+            log.info(`\t${pack.name}`);
+            pump(
+                [
+                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
+                    tap(file => {
+                        //We want to include the package name in the directory.
+                        file.base = path.resolve(file.base, "..");
+                    }),
+                    ...this.getTasks((plugin) => plugin.installBehaviorTasks),
+                    dest(destination)
+                ],
+                packDone
+            );
+        },
+        done);
     }
 
-    configureEverythingForMe() {
+    cleanResources (done) {
+        log.info("Cleaning installed resource packs");
+        const destination = path.join(this.gameDataDir, "development_resource_packs");
+        this.determinePacksInLocation(destination, (installedPacks) => {
+            const packsToRemove = installedPacks.filter(ip => this.packs.find(p => p.uuid === ip.uuid))
+                .map(ip => ip.relativePath);
+            if (packsToRemove.length === 0) {
+                done();
+                return;
+            }
+            pump(
+                [
+                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    tap(file => {
+                        log.info(`\tRemoving resource pack ${path.relative(destination, file.path)}`);
+                    }),
+                    clean( {force: true} )
+                ],
+                done
+            );
+        });
+    }
+
+    installResources (done) {
+        log.info("Installing resource packs");
+
+        return this.foreachPack("resources", (pack, packDone) => {
+            const destination = path.join(this.gameDataDir, "development_resource_packs");
+            log.info(`\t${pack.name}`);
+            pump(
+                [
+                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
+                    tap(file => {
+                        //We want to include the package name in the directory.
+                        file.base = path.resolve(file.base, "..");
+                    }),
+                    ...this.getTasks((plugin) => plugin.installResourceTasks),
+                    dest(destination)
+                ],
+                packDone
+            );
+        },
+        done);
+    }
+
+    createMCPacks(done) {
+        log.info("Creating .mcpack files");
+        return this.foreachPack((pack, packDone) => {
+            log.info(`\t${pack.name}`);
+            pump(
+                [
+                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
+                    tap(file => {
+                        //We want to include the package name in the directory.
+                        file.base = path.resolve(file.base, "..");
+                    }),
+                    ...this.getTasks((plugin) => plugin.createMCPackTasks),
+                    zip(pack.name + ".mcpack"),
+                    dest(this.packageDir)
+                ],
+                packDone
+            );
+        }, 
+        done);
+    }
+
+    createMCAddon(done) {
+        log.info("Creating .mcaddon");
+
+        pump(
+            [
+                src("*.mcpack", { cwd: path.join(this.packageDir) }),
+                ...this.getTasks((plugin) => plugin.createMCAddOnTasks),
+                zip(this._modName + ".mcaddon"),
+                dest(this.packageDir)
+            ],
+            done
+        );
+    }
+
+    configureEverythingForMe () {
         const builder = this;
         const tasks = {};
-
-        tasks.clean = function clean() {
-            return builder.cleanOutDir();
+        tasks.clean = function clean (done) {
+            return builder.cleanOutDir(done);
         };
 
-        tasks.scripts = function buildScripts() {
-            return builder.scripts();
-        };
-
-        tasks.behavior = function buildBehavior() {
-            return builder.behavior();
-        };
-
-        tasks.resources = function buildResources() {
-            return builder.resources();
-        };
-
-        tasks.verifyMinecraftExists = function verifyMinecraftExists(done) {
-            return builder.verifyMinecraftExists(done);
-        };
-
-        tasks.install_behaviour = series(
-            tasks.verifyMinecraftExists,
-            function cleanBehavior() {
-                return builder.cleanBehavior();
+        tasks.verifyMinecraftDataDirExists = series(
+            function determineMinecraftDataDirectory (done) {
+                return builder.determineMinecraftDataDirectory(done);
             },
-            function installBehavior() {
-                return builder.installBehavior();
+            function verifyMinecraftDataDirExists (done) {
+                return builder.verifyMinecraftDataDirExists(done);
             }
         );
 
-        tasks.install_resources = series(
-            tasks.verifyMinecraftExists,
-            function cleanResources() {
-                return builder.cleanResources();
+        tasks.installBehaviour = series(
+            tasks.verifyMinecraftDataDirExists,
+            function cleanBehavior (done) {
+                return builder.cleanBehavior(done);
             },
-            function installResources() {
-                return builder.installResources();
+            function installBehavior (done) {
+                return builder.installBehavior(done);
             }
         );
 
-        tasks.build = parallel(
-            tasks.scripts, 
-            tasks.behavior, 
-            tasks.resources
+        tasks.installResources = series(
+            tasks.verifyMinecraftDataDirExists,
+            function cleanResources (done) {
+                return builder.cleanResources(done);
+            },
+            function installResources (done) {
+                return builder.installResources(done);
+            }
         );
-        
+
+        tasks.determinePacks = function determinePacks (done) {
+            return builder.determinePacks(done);
+        };
+
+        tasks.buildSource = function buildSource(done) {
+            return builder.source(done);
+        };
+
+        tasks.build = series(
+            tasks.determinePacks,
+            tasks.buildSource
+        );
+
+        this._plugins.forEach(plugin => plugin.addDefaultTasks && plugin.addDefaultTasks(tasks));
+
         tasks.rebuild = series(
-            function clean() {
-                return builder.cleanOutDir();
+            tasks.clean,
+            tasks.build
+        );
+
+        tasks.package = series(
+            tasks.rebuild,
+            function createMCPacks(done) {
+                return builder.createMCPacks(done);
             },
-            tasks.build            
+            function createMCAddon(done) {
+                return builder.createMCAddon(done);
+            }
         );
 
         tasks.install = series(
+            tasks.determinePacks,
             tasks.build,
             parallel(
-                tasks.install_behaviour,
-                tasks.install_resources
+                tasks.installBehaviour,
+                tasks.installResources
             )
-        );        
+        );
 
         tasks.default = series(tasks.install);
 
-        function watchForUnlink(watcher) {
-            return watcher.on("unlink", function (filepath) {
-                var filePathFromSrc = path.relative(path.resolve("src"), filepath);
-                // Concatenating the 'build' absolute path used by gulp.dest in the scripts task
-                var destFilePath = path.resolve("build", filePathFromSrc);
-                del.sync(destFilePath);
-            });
-        }
-
-        const notify = function notify(done) {
+        const notify = function notify (done) {
             log.info("File Changed\n");
             done();
         };
 
-        function watchFiles() {
-            watchForUnlink(watch("src/scripts/**/*", series(notify, tasks.scripts, tasks.install_behaviour)));
-            watchForUnlink(watch("src/behaviors/**/*", series(notify, tasks.behavior, tasks.install_behaviour)));
-            watchForUnlink(watch("src/resources/**/*", series(notify, tasks.resources, tasks.install_resources)));
+        tasks.watchLoop = series(
+            notify,
+            tasks.install
+        );
+
+        function watchFiles () {
+            // normalize paths to posix format because globbing doesn't work with windows paths.
+            // unfortunately path.join and path.resolve both change the path to windows format.
+            const watchPath = normalize(path.join(path.resolve(builder.sourceDir), "**/*"));
+            return watch(watchPath, tasks.watchLoop);
         }
 
         tasks.watch = series(
             tasks.clean,
-            tasks.install,
+            tasks.watchLoop,
             watchFiles
         );
 
@@ -184,34 +459,4 @@ class MinecraftModBuilder {
     }
 }
 
-function toArray(collection, options) {
-    if (typeof collection === "string") return (options && options.query ? toArray(document.querySelectorAll(collection)) : [collection]);
-    if (typeof collection === "undefined") return [];
-    if (collection === null) return [null];
-    if (typeof window != "undefined" && collection === window) return [window];
-    if (Array.isArray(collection)) return collection.slice();
-    if (typeof collection.length != "number") return [collection];
-    if (typeof collection === "function") return [collection];
-    if (collection.length === 0) return [];
-    var arr = [];
-    for (var i = 0; i < collection.length; i++) {
-        if (collection.hasOwnProperty(i) || i in collection) {
-            arr.push(collection[i]);
-        }
-    }
-    if (arr.length === 0) return [collection];
-    return arr;
-}
-
-function augmentPipe(stream, additionalActions) {
-    for (const action of toArray(additionalActions)) {
-        if (typeof action === "function") {
-            stream = stream.pipe(action());
-        } else {
-            stream = stream.pipe(action);
-        }
-    }
-    return stream;
-}
-
-module.exports = MinecraftModBuilder;
+module.exports = MinecraftAddonBuilder;

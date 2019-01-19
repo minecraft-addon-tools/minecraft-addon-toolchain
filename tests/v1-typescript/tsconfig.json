@@ -4,9 +4,9 @@
     "compilerOptions": {
         "module": "ES6",
         "noImplicitAny": true,
-        "rootDir": "./src"
+        "rootDir": "./packs"
     },
     "include": [
-        "src/behaviors/scripts/*/*",
+        "**/scripts/*/*",
     ]
 }

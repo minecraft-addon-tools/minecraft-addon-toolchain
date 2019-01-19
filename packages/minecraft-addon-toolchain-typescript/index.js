@@ -1,5 +1,9 @@
+/// <reference types="minecraft-addon-toolchain/v1" />
 const ts = require("gulp-typescript");
 
+/**
+ * @type{IPlugin}
+ */
 class TypeScriptSupport {
     constructor() {
         this.settings = {
@@ -17,7 +21,7 @@ class TypeScriptSupport {
     }
 
     set builder(builder) {
-        if (builder._version < 2) {
+        if (builder._version < 1) {
             throw new Error("TypeScript support requires using a minecraft-addon-toolchain with at least version 2 or higher");
         }
     }
