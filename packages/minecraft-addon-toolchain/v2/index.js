@@ -1,4 +1,4 @@
-/// <reference path="../index.d.ts" />
+/// <reference path="./index.d.ts" />
 "use strict";
 
 const { series, parallel, src, dest, watch } = require("gulp");
@@ -36,6 +36,7 @@ class MinecraftAddonBuilder {
     }
 
     addPlugin(plugin) {
+        plugin.builder = this;
         this._plugins.push(plugin);
     }
 
@@ -132,14 +133,6 @@ class MinecraftAddonBuilder {
         );
     }
 
-    determinePacks(done) {
-        this.packs.length = 0;
-        this.determinePacksInLocation(this.sourceDir, (packs) => {
-            this.packs.push(...packs);
-            done();
-        });
-    }
-
     /**
      * 
      * @param {string | null} type optional, either "resources" or "behavior". defaults to both.
@@ -170,6 +163,11 @@ class MinecraftAddonBuilder {
         )();
     }
 
+    /**
+     * 
+     * @param {(plugin: IPlugin) => ITask[] | null} selector 
+     * @returns {NodeJS.ReadWriteStream[]}
+     */
     getTasks(selector) {
         return this._plugins
             .map(plugin => selector(plugin) || [])
@@ -185,6 +183,14 @@ class MinecraftAddonBuilder {
             }
             )
             .reduce((p, c) => p.concat(c), []);
+    }
+
+    determinePacks(done) {
+        this.packs.length = 0;
+        this.determinePacksInLocation(this.sourceDir, (packs) => {
+            this.packs.push(...packs);
+            done();
+        });
     }
 
     cleanOutDir(done) {
@@ -299,7 +305,7 @@ class MinecraftAddonBuilder {
                         //We want to include the package name in the directory.
                         file.base = path.resolve(file.base, "..");
                     }),
-                    ...this.getTasks((plugin) => plugin.installBehaviorTasks),
+                    ...this.getTasks((plugin) => plugin.installResourceTasks),
                     dest(destination)
                 ],
                 packDone

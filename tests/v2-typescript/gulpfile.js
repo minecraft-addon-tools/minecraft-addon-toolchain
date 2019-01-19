@@ -5,8 +5,8 @@ const TerserSupport = require("minecraft-addon-toolchain-terser");
 
 const builder = new MinecraftAddonBuilder("ToolchainTest");
 
-builder.addPlugin(new TypeScriptSupport(builder));
-builder.addPlugin(new TerserSupport(builder));
-builder.addPlugin(new BrowserifySupport(builder));
+builder.addPlugin(new TypeScriptSupport());
+builder.addPlugin(new TerserSupport());
+builder.addPlugin(new BrowserifySupport());
 
 module.exports = builder.configureEverythingForMe();

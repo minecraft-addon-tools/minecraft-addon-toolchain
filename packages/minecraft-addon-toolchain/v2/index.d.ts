@@ -1,5 +1,12 @@
 interface IPlugin {
+    //Use a property setter to verify version, etc.
+    browser: MinecraftAddonBuilder;
+
     sourceTasks?: ITask[];
+    installBehaviorTasks?: ITask[];
+    installResourceTasks?: ITask[];
+    createMCPackTasks?: ITask[];
+    createMCAddOnTasks?: ITask[];
     addDefaultTasks?: (gulpTasks: any) => void;
 }
 

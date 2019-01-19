@@ -1,4 +1,4 @@
-/// <reference types="minecraft-addon-toolchain" />
+/// <reference types="minecraft-addon-toolchain/v2" />
 const { series, src, dest } = require("gulp");
 
 const tap = require("gulp-tap");
@@ -14,11 +14,7 @@ const commonJSModule = require("@babel/plugin-transform-modules-commonjs");
  * @type{IPlugin}
  */
 class BrowserifySupport {
-    constructor(builder) {
-        if (builder._version < 2) {
-            throw new Error("browserify support requires using a minecraft-addon-toolchain with at least version 2 or higher");
-        }
-        this._builder = builder;
+    constructor() {
         this.browserifyOptions = {
             // debug: true,
         };
@@ -44,6 +40,13 @@ class BrowserifySupport {
                 })
             }
         ];
+    }
+
+    set builder(builder) {
+        if (builder._version < 2) {
+            throw new Error("browserify support requires using a minecraft-addon-toolchain with at least version 2 or higher");
+        }
+        this._builder = builder;
     }
 
     addDefaultTasks(gulpTasks) {
