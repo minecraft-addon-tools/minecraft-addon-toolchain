@@ -54,13 +54,13 @@ class MinecraftAddonBuilder {
                 );
                 break;
             case "linux":
-                this.platformRoot = path.resolve("~/.local/share/mcpelauncher");
+                this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
                 break;
             case "darwin":
-                this.platformRoot = path.resolve("~/Library/Application Support/mcpelauncher");
+                this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
                 break;
             case "android":
-                this.platformRoot = path.resolve("~/storage/shared/");
+                this.platformRoot = path.join(os.homedir(), "storage/shared/");
                 break;
             default:
                 done(new Error("Unexpected platform, please set platformRoot manually"));
