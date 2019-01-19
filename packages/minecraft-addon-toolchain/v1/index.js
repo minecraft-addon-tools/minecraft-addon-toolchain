@@ -16,7 +16,7 @@ const zip = require("gulp-zip");
 
 class MinecraftAddonBuilder {
     constructor (modName) {
-        this._version = 2;
+        this._version = 1;
         this._modName = modName;
         /** @type IPlugin[] */
         this._plugins = [];

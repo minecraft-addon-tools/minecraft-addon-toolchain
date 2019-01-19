@@ -7,7 +7,7 @@ const log = require("gulplog");
 
 class MinecraftModBuilder {
     constructor(modName) {
-        this._version = 1;
+        this._version = 0;
         this._modName = modName;
         this._destRoot = path.join(
             process.env["LOCALAPPDATA"],
@@ -27,7 +27,7 @@ class MinecraftModBuilder {
         this.resourcesDir = "./src/resources/";
 
         log.warn("------------");
-        log.warn("You are using the older V1 version of the toolchain.");
+        log.warn("You are using the older V0 version of the toolchain.");
         log.warn("It is recommended that you update to the latest version. Please see the upgrade notes for details");
         log.warn("https://minecraft-addon-tools.github.io/docs/Toolchain/upgrade-notes");
         log.warn("------------");
