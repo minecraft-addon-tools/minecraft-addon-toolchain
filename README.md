@@ -23,7 +23,7 @@ Mojang provides instructions on how to get into the Beta program here: [How to g
 Ensure you have a package.json file present in your development directory, if you do not, you can create a minimal valid package with the following contents:
 ```json
 {
-  "private": "true",
+  "private": true
 }
 ```
 

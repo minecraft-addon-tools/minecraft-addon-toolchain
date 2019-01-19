@@ -1,6 +1,6 @@
 {
   "name": "test-toolchain-v2-typescript",
-  "private": "true",
+  "private": true,
   "scripts": {
     "build": "gulp build",
     "rebuild": "gulp rebuild",
