@@ -21,9 +21,6 @@ class MinecraftAddonBuilder {
         /** @type IPlugin[] */
         this._plugins = [];
 
-        this.platformRoot = null;
-        this.gameStateDir = "games/com.mojang";
-
         this.gameDataDir = process.env.BEDROCK_DATA_DIR || null;
 
         // script task factories
@@ -45,35 +42,30 @@ class MinecraftAddonBuilder {
             done();
             return;
         }
-        if (!this.platformRoot) {
-            switch (os.platform()) {
-            case "win32":
-                this.platformRoot = path.join(
-                    process.env["LOCALAPPDATA"],
-                    "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
-                );
-                break;
-            case "linux":
-                this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
-                break;
-            case "darwin":
-                this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
-                break;
-            case "android":
-                this.platformRoot = path.join(os.homedir(), "storage/shared/");
-                break;
-            default:
-                done(new Error("Unexpected platform, please set platformRoot manually"));
-                return;
-            }
-        }
 
-        if (!this.platformRoot) {
-            done(new Error("Unable to determine platform data storage directory for minecraft"));
+        let platformRoot = null;
+        switch (os.platform()) {
+        case "win32":
+            this.platformRoot = path.join(
+                process.env["LOCALAPPDATA"],
+                "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
+            );
+            break;
+        case "linux":
+            this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
+            break;
+        case "darwin":
+            this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
+            break;
+        case "android":
+            this.platformRoot = path.join(os.homedir(), "storage/shared/");
+            break;
+        default:
+            done(new Error("Unknown platform, please set the BEDROCK_DATA_DIR environment variable"));
             return;
         }
 
-        this.gameDataDir = path.join(this.platformRoot, this.gameStateDir);
+        this.gameDataDir = path.join(platformRoot, "games/com.mojang");
         done();
     }
 
