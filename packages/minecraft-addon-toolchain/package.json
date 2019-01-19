@@ -1,6 +1,6 @@
 {
   "name": "minecraft-addon-toolchain",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Productivity tools for making Minecraft Bedrock Edition add-ons",
   "main": "index.js",
   "scripts": {
