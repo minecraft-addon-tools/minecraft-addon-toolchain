@@ -1,17 +1,17 @@
 {
     "cSpell.words": [
-        "8wekyb3d8bbwe",
+        "behavior",
         "LOCALAPPDATA",
-        "toolchain",
         "globbing",
         "gulpfile",
         "gulplog",
+        "installaddon",
+        "mcaddon",
+        "mcpack",
         "mcpelauncher",
         "minecraft",
         "mojang",
-        "mcpack",
-        "mcaddon",
-        "youraddonname",
-        "installaddon"
+        "toolchain",
+        "youraddonname"
     ]
 }

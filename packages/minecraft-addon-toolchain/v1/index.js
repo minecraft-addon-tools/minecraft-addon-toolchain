@@ -1,7 +1,13 @@
 /// <reference path="./index.d.ts" />
 "use strict";
 
-const { series, parallel, src, dest, watch } = require("gulp");
+const {
+    series,
+    parallel,
+    src,
+    dest,
+    watch
+} = require("gulp");
 const path = require("path");
 const fs = require("fs");
 const clean = require("gulp-clean");
@@ -15,7 +21,7 @@ const normalize = require("normalize-path");
 const zip = require("gulp-zip");
 
 class MinecraftAddonBuilder {
-    constructor (modName) {
+    constructor(modName) {
         this._version = 1;
         this._modName = modName;
         /** @type IPlugin[] */
@@ -37,7 +43,7 @@ class MinecraftAddonBuilder {
         this._plugins.push(plugin);
     }
 
-    determineMinecraftDataDirectory (done) {
+    determineMinecraftDataDirectory(done) {
         if (this.gameDataDir) {
             done();
             return;
@@ -45,31 +51,31 @@ class MinecraftAddonBuilder {
 
         let platformRoot = null;
         switch (os.platform()) {
-        case "win32":
-            this.platformRoot = path.join(
-                process.env["LOCALAPPDATA"],
-                "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
-            );
-            break;
-        case "linux":
-            this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
-            break;
-        case "darwin":
-            this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
-            break;
-        case "android":
-            this.platformRoot = path.join(os.homedir(), "storage/shared/");
-            break;
-        default:
-            done(new Error("Unknown platform, please set the BEDROCK_DATA_DIR environment variable"));
-            return;
+            case "win32":
+                this.platformRoot = path.join(
+                    process.env["LOCALAPPDATA"],
+                    "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
+                );
+                break;
+            case "linux":
+                this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
+                break;
+            case "darwin":
+                this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
+                break;
+            case "android":
+                this.platformRoot = path.join(os.homedir(), "storage/shared/");
+                break;
+            default:
+                done(new Error("Unknown platform, please set the BEDROCK_DATA_DIR environment variable"));
+                return;
         }
 
         this.gameDataDir = path.join(platformRoot, "games/com.mojang");
         done();
     }
 
-    verifyMinecraftDataDirExists (done) {
+    verifyMinecraftDataDirExists(done) {
         fs.stat(this.gameDataDir, (err) => {
             if (err) {
                 done(new Error("Minecraft Bedrock edition's data directory is not available: " + this.gameDataDir));
@@ -88,7 +94,9 @@ class MinecraftAddonBuilder {
         const packs = [];
         pump(
             [
-                src("**/manifest.json", {cwd: location}),
+                src("**/manifest.json", {
+                    cwd: location
+                }),
                 tap(file => {
                     const manifest = JSON.parse(file.contents);
                     /** {@type} IPack */
@@ -143,7 +151,7 @@ class MinecraftAddonBuilder {
         }
 
         const tasks = packs.map(p => (taskDone) => {
-            return action(p, taskDone); 
+            return action(p, taskDone);
         });
 
         if (tasks.length === 0) {
@@ -178,8 +186,7 @@ class MinecraftAddonBuilder {
                     actions.push(exclude(action.condition));
                 }
                 return actions;
-            }
-            )
+            })
             .reduce((p, c) => p.concat(c), []);
     }
 
@@ -194,33 +201,40 @@ class MinecraftAddonBuilder {
     cleanOutDir(done) {
         pump(
             [
-                src(this.bundleDir, { read: false, allowEmpty: true }),
+                src(this.bundleDir, {
+                    read: false,
+                    allowEmpty: true
+                }),
                 clean()
             ],
             done
         );
     }
 
-    source (done) {
-        this.foreachPack(null, (pack, packDone) => {
-            log.info(`build ${pack.name} - ${path.join(pack.relativePath, "./**/*")}`);
-            
-            return pump(
-                [
-                    src(path.join(pack.relativePath, "./**/*"), { cwd: this.sourceDir }),
-                    ...this.getTasks((plugin) => plugin.sourceTasks),
-                    // tap(file => {
-                    //     log.info(file.path);
-                    // }),
-                    dest(this.bundleDir)
-                ],
-                packDone
-            );
-        },
-        done);
+    source(done) {
+        this.foreachPack(null, 
+            (pack, packDone) => {
+                log.info(`build ${pack.name} - ${path.join(pack.relativePath, "./**/*")}`);
+
+                return pump(
+                    [
+                        src(path.join(pack.relativePath, "./**/*"), {
+                            cwd: this.sourceDir
+                        }),
+                        ...this.getTasks((plugin) => plugin.sourceTasks),
+                        // tap(file => {
+                        //     log.info(file.path);
+                        // }),
+                        dest(this.bundleDir)
+                    ],
+                    packDone
+                );
+            },
+            done
+        );
     }
 
-    cleanBehavior (done) {
+    cleanBehavior(done) {
         log.info("Cleaning installed behaviour packs");
         const destination = path.join(this.gameDataDir, "development_behavior_packs");
         this.determinePacksInLocation(destination, (installedPacks) => {
@@ -235,39 +249,48 @@ class MinecraftAddonBuilder {
             }
             pump(
                 [
-                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    src(packsToRemove, {
+                        cwd: destination,
+                        read: false,
+                        allowEmpty: true
+                    }),
                     tap(file => {
                         log.info(`\tRemoving behavior pack ${path.relative(destination, file.path)}`);
                     }),
-                    clean( {force: true} )
+                    clean({
+                        force: true
+                    })
                 ],
                 done
             );
         });
     }
 
-    installBehavior (done) {
+    installBehavior(done) {
         log.info("Installing behaviour packs");
-        return this.foreachPack("behavior", (pack, packDone) => {
-            const destination = path.join(this.gameDataDir, "development_behavior_packs");
-            log.info(`\t${pack.name}`);
-            pump(
-                [
-                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
-                    tap(file => {
-                        //We want to include the package name in the directory.
-                        file.base = path.resolve(file.base, "..");
-                    }),
-                    ...this.getTasks((plugin) => plugin.installBehaviorTasks),
-                    dest(destination)
-                ],
-                packDone
-            );
-        },
-        done);
+        return this.foreachPack("behavior",
+            (pack, packDone) => {
+                const destination = path.join(this.gameDataDir, "development_behavior_packs");
+                log.info(`\t${pack.name}`);
+                return pump(
+                    [
+                        src("./**/*", {
+                            cwd: path.join(this.bundleDir, pack.relativePath)
+                        }),
+                        tap(file => {
+                            //We want to include the package name in the directory.
+                            file.base = path.resolve(file.base, "..");
+                        }),
+                        ...this.getTasks((plugin) => plugin.installBehaviorTasks),
+                        dest(destination)
+                    ],
+                    packDone
+                );
+            },
+            done);
     }
 
-    cleanResources (done) {
+    cleanResources(done) {
         log.info("Cleaning installed resource packs");
         const destination = path.join(this.gameDataDir, "development_resource_packs");
         this.determinePacksInLocation(destination, (installedPacks) => {
@@ -279,58 +302,70 @@ class MinecraftAddonBuilder {
             }
             pump(
                 [
-                    src(packsToRemove, { cwd: destination, read: false, allowEmpty: true }),
+                    src(packsToRemove, {
+                        cwd: destination,
+                        read: false,
+                        allowEmpty: true
+                    }),
                     tap(file => {
                         log.info(`\tRemoving resource pack ${path.relative(destination, file.path)}`);
                     }),
-                    clean( {force: true} )
+                    clean({
+                        force: true
+                    })
                 ],
                 done
             );
         });
     }
 
-    installResources (done) {
+    installResources(done) {
         log.info("Installing resource packs");
 
-        return this.foreachPack("resources", (pack, packDone) => {
-            const destination = path.join(this.gameDataDir, "development_resource_packs");
-            log.info(`\t${pack.name}`);
-            pump(
-                [
-                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
-                    tap(file => {
-                        //We want to include the package name in the directory.
-                        file.base = path.resolve(file.base, "..");
-                    }),
-                    ...this.getTasks((plugin) => plugin.installResourceTasks),
-                    dest(destination)
-                ],
-                packDone
-            );
-        },
-        done);
+        return this.foreachPack("resources",
+            (pack, packDone) => {
+                const destination = path.join(this.gameDataDir, "development_resource_packs");
+                log.info(`\t${pack.name}`);
+                return pump(
+                    [
+                        src("./**/*", {
+                            cwd: path.join(this.bundleDir, pack.relativePath)
+                        }),
+                        tap(file => {
+                            //We want to include the package name in the directory.
+                            file.base = path.resolve(file.base, "..");
+                        }),
+                        ...this.getTasks((plugin) => plugin.installResourceTasks),
+                        dest(destination)
+                    ],
+                    packDone
+                );
+            },
+            done);
     }
 
     createMCPacks(done) {
         log.info("Creating .mcpack files");
-        return this.foreachPack((pack, packDone) => {
-            log.info(`\t${pack.name}`);
-            pump(
-                [
-                    src("./**/*", { cwd: path.join(this.bundleDir, pack.relativePath) }),
-                    tap(file => {
-                        //We want to include the package name in the directory.
-                        file.base = path.resolve(file.base, "..");
-                    }),
-                    ...this.getTasks((plugin) => plugin.createMCPackTasks),
-                    zip(pack.name + ".mcpack"),
-                    dest(this.packageDir)
-                ],
-                packDone
-            );
-        }, 
-        done);
+        return this.foreachPack(
+            (pack, packDone) => {
+                log.info(`\t${pack.name}`);
+                pump(
+                    [
+                        src("./**/*", {
+                            cwd: path.join(this.bundleDir, pack.relativePath)
+                        }),
+                        tap(file => {
+                            //We want to include the package name in the directory.
+                            file.base = path.resolve(file.base, "..");
+                        }),
+                        ...this.getTasks((plugin) => plugin.createMCPackTasks),
+                        zip(pack.name + ".mcpack"),
+                        dest(this.packageDir)
+                    ],
+                    packDone
+                );
+            },
+            done);
     }
 
     createMCAddon(done) {
@@ -338,7 +373,9 @@ class MinecraftAddonBuilder {
 
         pump(
             [
-                src("*.mcpack", { cwd: path.join(this.packageDir) }),
+                src("*.mcpack", {
+                    cwd: path.join(this.packageDir)
+                }),
                 ...this.getTasks((plugin) => plugin.createMCAddOnTasks),
                 zip(this._modName + ".mcaddon"),
                 dest(this.packageDir)
@@ -347,43 +384,43 @@ class MinecraftAddonBuilder {
         );
     }
 
-    configureEverythingForMe () {
+    configureEverythingForMe() {
         const builder = this;
         const tasks = {};
-        tasks.clean = function clean (done) {
+        tasks.clean = function clean(done) {
             return builder.cleanOutDir(done);
         };
 
         tasks.verifyMinecraftDataDirExists = series(
-            function determineMinecraftDataDirectory (done) {
+            function determineMinecraftDataDirectory(done) {
                 return builder.determineMinecraftDataDirectory(done);
             },
-            function verifyMinecraftDataDirExists (done) {
+            function verifyMinecraftDataDirExists(done) {
                 return builder.verifyMinecraftDataDirExists(done);
             }
         );
 
         tasks.installBehaviour = series(
             tasks.verifyMinecraftDataDirExists,
-            function cleanBehavior (done) {
+            function cleanBehavior(done) {
                 return builder.cleanBehavior(done);
             },
-            function installBehavior (done) {
+            function installBehavior(done) {
                 return builder.installBehavior(done);
             }
         );
 
         tasks.installResources = series(
             tasks.verifyMinecraftDataDirExists,
-            function cleanResources (done) {
+            function cleanResources(done) {
                 return builder.cleanResources(done);
             },
-            function installResources (done) {
+            function installResources(done) {
                 return builder.installResources(done);
             }
         );
 
-        tasks.determinePacks = function determinePacks (done) {
+        tasks.determinePacks = function determinePacks(done) {
             return builder.determinePacks(done);
         };
 
@@ -424,7 +461,7 @@ class MinecraftAddonBuilder {
 
         tasks.default = series(tasks.install);
 
-        const notify = function notify (done) {
+        const notify = function notify(done) {
             log.info("File Changed\n");
             done();
         };
@@ -434,7 +471,7 @@ class MinecraftAddonBuilder {
             tasks.install
         );
 
-        function watchFiles () {
+        function watchFiles() {
             // normalize paths to posix format because globbing doesn't work with windows paths.
             // unfortunately path.join and path.resolve both change the path to windows format.
             const watchPath = normalize(path.join(path.resolve(builder.sourceDir), "**/*"));
