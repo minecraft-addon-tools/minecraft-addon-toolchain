@@ -154,6 +154,12 @@ class MinecraftAddonBuilder {
             return action(p, taskDone); 
         });
 
+        if (tasks.length === 0) {
+            log.error("No packs found");
+            done();
+            return;
+        }
+
         return series(
             series(...tasks),
             (seriesDone) => {
