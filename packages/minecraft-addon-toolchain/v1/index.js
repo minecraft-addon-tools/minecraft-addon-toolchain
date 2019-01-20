@@ -94,7 +94,7 @@ class MinecraftAddonBuilder {
         const packs = [];
         pump(
             [
-                src("**/manifest.json", {
+                src("*/manifest.json", {
                     cwd: location
                 }),
                 tap(file => {
@@ -136,8 +136,8 @@ class MinecraftAddonBuilder {
     /**
      * 
      * @param {string | null} type optional, either "resources" or "behavior". defaults to both.
-     * @param {*} action  the action to perform.
-     * @param {*} done  a callback to denote when the operations are complete.
+     * @param {(pack: IPack, callback: () => void)} action  the action to perform.
+     * @param {() => void} done  a callback to denote when the operations are complete.
      */
     foreachPack(type, action, done) {
         if (typeof type === "function") {
