@@ -459,6 +459,18 @@ class MinecraftAddonBuilder {
             )
         );
 
+        tasks.uninstall = series(
+            tasks.verifyMinecraftDataDirExists,
+            parallel(
+                function cleanResources(done) {
+                    return builder.cleanResources(done);
+                },
+                function cleanBehavior(done) {
+                    return builder.cleanBehavior(done);
+                }
+            )
+        );
+
         tasks.default = series(tasks.install);
 
         const notify = function notify(done) {
