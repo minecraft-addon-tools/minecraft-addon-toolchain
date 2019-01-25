@@ -52,19 +52,19 @@ class MinecraftAddonBuilder {
         let platformRoot = null;
         switch (os.platform()) {
             case "win32":
-                this.platformRoot = path.join(
+                platformRoot = path.join(
                     process.env["LOCALAPPDATA"],
                     "Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState"
                 );
                 break;
             case "linux":
-                this.platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
+                platformRoot = path.join(os.homedir(), ".local/share/mcpelauncher");
                 break;
             case "darwin":
-                this.platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
+                platformRoot = path.join(os.homedir(), "Library/Application Support/mcpelauncher");
                 break;
             case "android":
-                this.platformRoot = path.join(os.homedir(), "storage/shared/");
+                platformRoot = path.join(os.homedir(), "storage/shared/");
                 break;
             default:
                 done(new Error("Unknown platform, please set the BEDROCK_DATA_DIR environment variable"));
