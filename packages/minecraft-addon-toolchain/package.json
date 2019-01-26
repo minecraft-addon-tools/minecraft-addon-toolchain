@@ -22,6 +22,7 @@
   "homepage": "https://minecraft-addon-tools.github.io/",
   "dependencies": {
     "del": "^3.0.0",
+    "es6-dynamic-template": "^1.0.5",
     "gulp": "^4.0.0",
     "gulp-clean": "^0.4.0",
     "gulp-if": "^2.0.2",
@@ -30,8 +31,10 @@
     "gulp-tap": "^1.0.1",
     "gulp-zip": "^4.2.0",
     "gulplog": "^1.0.0",
+    "lodash": "^4.17.11",
     "normalize-path": "^3.0.0",
-    "pump": "^3.0.0"
+    "pump": "^3.0.0",
+    "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
     "eslint": "^5.11.1"

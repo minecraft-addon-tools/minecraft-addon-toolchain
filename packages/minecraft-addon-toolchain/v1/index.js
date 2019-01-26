@@ -19,6 +19,8 @@ const os = require("os");
 const exclude = require("gulp-ignore");
 const normalize = require("normalize-path");
 const zip = require("gulp-zip");
+const _ = require("lodash");
+const fillTemplate = require("es6-dynamic-template");
 
 class MinecraftAddonBuilder {
     constructor(modName) {
@@ -36,6 +38,18 @@ class MinecraftAddonBuilder {
         this.bundleDir = "./out/bundled";
         this.packageDir = "./out/packaged";
         this.sourceDir = "./packs";
+
+        this.templateDirName = "${modName} - ${name}";
+        this.templateMcPackName = "${modName} - ${name} - v${version}";
+    }
+
+    parseTemplate(template, pack, packType) {
+        var templateVars = _.cloneDeep(pack);
+        templateVars.packType = packType;
+        templateVars.modName = this._modName;
+        templateVars.type = undefined;
+        templateVars.version = _.isArray(pack.version) ? `${pack.version[0]}.${pack.version[1]}.${pack.version[2]}` : "No version in manifest";
+        return fillTemplate(template, templateVars);
     }
 
     addPlugin(plugin) {
@@ -201,7 +215,7 @@ class MinecraftAddonBuilder {
     cleanOutDir(done) {
         pump(
             [
-                src(this.bundleDir, {
+                src([this.bundleDir, this.packageDir], {
                     read: false,
                     allowEmpty: true
                 }),
@@ -270,16 +284,13 @@ class MinecraftAddonBuilder {
         log.info("Installing behaviour packs");
         return this.foreachPack("behavior",
             (pack, packDone) => {
-                const destination = path.join(this.gameDataDir, "development_behavior_packs");
+                const packDir = this.parseTemplate(this.templateDirName, pack, "behavior");
+                const destination = path.join(this.gameDataDir, "development_behavior_packs", packDir);
                 log.info(`\t${pack.name}`);
                 return pump(
                     [
                         src("./**/*", {
                             cwd: path.join(this.bundleDir, pack.relativePath)
-                        }),
-                        tap(file => {
-                            //We want to include the package name in the directory.
-                            file.base = path.resolve(file.base, "..");
                         }),
                         ...this.getTasks((plugin) => plugin.installBehaviorTasks),
                         dest(destination)
@@ -324,16 +335,13 @@ class MinecraftAddonBuilder {
 
         return this.foreachPack("resources",
             (pack, packDone) => {
-                const destination = path.join(this.gameDataDir, "development_resource_packs");
+                const packDir = this.parseTemplate(this.templateDirName, pack, "resources");
+                const destination = path.join(this.gameDataDir, "development_resource_packs", packDir);
                 log.info(`\t${pack.name}`);
                 return pump(
                     [
                         src("./**/*", {
                             cwd: path.join(this.bundleDir, pack.relativePath)
-                        }),
-                        tap(file => {
-                            //We want to include the package name in the directory.
-                            file.base = path.resolve(file.base, "..");
                         }),
                         ...this.getTasks((plugin) => plugin.installResourceTasks),
                         dest(destination)
@@ -348,6 +356,7 @@ class MinecraftAddonBuilder {
         log.info("Creating .mcpack files");
         return this.foreachPack(
             (pack, packDone) => {
+                const packZip = this.parseTemplate(this.templateMcPackName, pack);
                 log.info(`\t${pack.name}`);
                 pump(
                     [
@@ -359,7 +368,7 @@ class MinecraftAddonBuilder {
                             file.base = path.resolve(file.base, "..");
                         }),
                         ...this.getTasks((plugin) => plugin.createMCPackTasks),
-                        zip(pack.name + ".mcpack"),
+                        zip(packZip + ".mcpack"),
                         dest(this.packageDir)
                     ],
                     packDone
