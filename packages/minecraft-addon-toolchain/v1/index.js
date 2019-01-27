@@ -435,6 +435,8 @@ class MinecraftAddonBuilder {
         const builder = this;
         const tasks = {};
 
+        tasks.clean = steps.clean;
+
         tasks.build = series(
             steps.determinePacks,
             steps.buildSource
@@ -442,11 +444,13 @@ class MinecraftAddonBuilder {
 
         tasks.rebuild = series(
             steps.clean,
+            steps.determinePacks,
             steps.buildSource
         );
 
         tasks.package = series(
             steps.clean,
+            steps.determinePacks,
             steps.buildSource,
             steps.createMCPacks,
             steps.createMCAddon
