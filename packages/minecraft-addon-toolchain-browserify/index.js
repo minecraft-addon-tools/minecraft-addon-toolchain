@@ -44,27 +44,28 @@ class BrowserifySupport {
 
     set builder(builder) {
         if (builder._version < 1) {
-            throw new Error("browserify support requires using a minecraft-addon-toolchain with at least version 2 or higher");
+            throw new Error("browserify support requires using a minecraft-addon-toolchain with at least version 1 or higher");
         }
         this._builder = builder;
     }
 
     addDefaultTasks(gulpTasks) {
-        const _this = this;
-        gulpTasks.build = series(
-            gulpTasks.build,
-            function browserify (done) {
-                return _this._browserify(_this._builder, done);
-            }
+        const browserify = this._browserify.bind(this)
+        browserify.displayName = "browserify";
+
+        gulpTasks.buildSource = series(
+            gulpTasks.buildSource,
+            browserify
         );
     }
 
-    _browserify (builder, done) {
-        return builder.foreachPack("behavior", 
+    _browserify (done) {
+        return this._builder.foreachPack(
+            "browserify",
+            "behavior", 
             (pack, packDone) => {
-                log.info(`browserify ${pack.name}`);
                 const packDir = path.join(this.intermediateDir, pack.relativePath);
-                const destination = path.join(builder.bundleDir, pack.relativePath);
+                const destination = path.join(this._builder.bundleDir, pack.relativePath);
                 return pump(
                     [
                         src(this.entryPoints, { cwd: packDir, read: false }),

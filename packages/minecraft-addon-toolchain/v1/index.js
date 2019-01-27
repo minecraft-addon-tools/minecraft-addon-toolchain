@@ -22,18 +22,20 @@ const zip = require("gulp-zip");
 const _ = require("lodash");
 const fillTemplate = require("es6-dynamic-template");
 
+const _internalDebug = false;
+
 class MinecraftAddonBuilder {
     constructor(modName) {
         this._version = 1;
         this._modName = modName;
+        
         /** @type IPlugin[] */
         this._plugins = [];
 
-        this.gameDataDir = process.env.BEDROCK_DATA_DIR || null;
-
-        // script task factories
         /** @type IPack[] */
         this.packs = [];
+
+        this.gameDataDir = process.env.BEDROCK_DATA_DIR || null;
 
         this.bundleDir = "./out/bundled";
         this.packageDir = "./out/packaged";
@@ -86,10 +88,7 @@ class MinecraftAddonBuilder {
         }
 
         this.gameDataDir = path.join(platformRoot, "games/com.mojang");
-        done();
-    }
 
-    verifyMinecraftDataDirExists(done) {
         fs.stat(this.gameDataDir, (err) => {
             if (err) {
                 done(new Error("Minecraft Bedrock edition's data directory is not available: " + this.gameDataDir));
@@ -148,12 +147,12 @@ class MinecraftAddonBuilder {
     }
 
     /**
-     * 
+     * @param {string} description what to show in the gulp description. The directory name will be 
      * @param {string | null} type optional, either "resources" or "behavior". defaults to both.
      * @param {(pack: IPack, callback: () => void)} action  the action to perform.
      * @param {() => void} done  a callback to denote when the operations are complete.
      */
-    foreachPack(type, action, done) {
+    foreachPack(description, type, action, done) {
         if (typeof type === "function") {
             done = action;
             action = type;
@@ -164,8 +163,12 @@ class MinecraftAddonBuilder {
             packs = packs.filter(p => !type || p.types.some(t => t === type));
         }
 
-        const tasks = packs.map(p => (taskDone) => {
-            return action(p, taskDone);
+        const tasks = packs.map(p => {
+            const task = (taskDone) => {
+                return action(p, taskDone);
+            };
+            task.displayName = `${description}: ${p.relativePath}`;
+            return task;
         });
 
         if (tasks.length === 0) {
@@ -174,12 +177,17 @@ class MinecraftAddonBuilder {
             return;
         }
 
+        const completeDynamicTasks = (seriesDone) => {
+            seriesDone();
+            done();
+        };
+        completeDynamicTasks.displayName = `${description}: completeDynamicTasks`;
+
+        //FIXME: find a way to invoke done() in a way that's safe for parallel that doesn't involve creating a bogus task in the task list.
+        //If I were using series, I could simply invoke it when the last pack is being processed.
         return series(
-            series(...tasks),
-            (seriesDone) => {
-                seriesDone();
-                done();
-            }
+            parallel(...tasks),
+            completeDynamicTasks
         )();
     }
 
@@ -212,7 +220,7 @@ class MinecraftAddonBuilder {
         });
     }
 
-    cleanOutDir(done) {
+    clean(done) {
         pump(
             [
                 src([this.bundleDir, this.packageDir], {
@@ -225,10 +233,12 @@ class MinecraftAddonBuilder {
         );
     }
 
-    source(done) {
-        this.foreachPack(null, 
+    buildSource(done) {
+        this.foreachPack(
+            "buildSource", 
+            null, 
             (pack, packDone) => {
-                log.info(`build ${pack.name} - ${path.join(pack.relativePath, "./**/*")}`);
+                _internalDebug && log.info(`build ${pack.name} - ${path.join(pack.relativePath, "./**/*")}`);
 
                 return pump(
                     [
@@ -249,7 +259,7 @@ class MinecraftAddonBuilder {
     }
 
     cleanBehavior(done) {
-        log.info("Cleaning installed behaviour packs");
+        _internalDebug && log.info("Cleaning installed behaviour packs");
         const destination = path.join(this.gameDataDir, "development_behavior_packs");
         this.determinePacksInLocation(destination, (installedPacks) => {
 
@@ -281,12 +291,14 @@ class MinecraftAddonBuilder {
     }
 
     installBehavior(done) {
-        log.info("Installing behaviour packs");
-        return this.foreachPack("behavior",
+        _internalDebug && log.info("Installing behaviour packs");
+        return this.foreachPack(
+            "installBehavior", 
+            "behavior",
             (pack, packDone) => {
                 const packDir = this.parseTemplate(this.templateDirName, pack, "behavior");
                 const destination = path.join(this.gameDataDir, "development_behavior_packs", packDir);
-                log.info(`\t${pack.name}`);
+                _internalDebug && log.info(`\t${pack.name}`);
                 return pump(
                     [
                         src("./**/*", {
@@ -302,16 +314,16 @@ class MinecraftAddonBuilder {
     }
 
     cleanResources(done) {
-        log.info("Cleaning installed resource packs");
+        _internalDebug && log.info("Cleaning installed resource packs");
         const destination = path.join(this.gameDataDir, "development_resource_packs");
-        this.determinePacksInLocation(destination, (installedPacks) => {
+        return this.determinePacksInLocation(destination, (installedPacks) => {
             const packsToRemove = installedPacks.filter(ip => this.packs.find(p => p.uuid === ip.uuid))
                 .map(ip => ip.relativePath);
             if (packsToRemove.length === 0) {
                 done();
                 return;
             }
-            pump(
+            return pump(
                 [
                     src(packsToRemove, {
                         cwd: destination,
@@ -331,13 +343,15 @@ class MinecraftAddonBuilder {
     }
 
     installResources(done) {
-        log.info("Installing resource packs");
+        _internalDebug && log.info("Installing resource packs");
 
-        return this.foreachPack("resources",
+        return this.foreachPack(
+            "installResources", 
+            "resources",
             (pack, packDone) => {
                 const packDir = this.parseTemplate(this.templateDirName, pack, "resources");
                 const destination = path.join(this.gameDataDir, "development_resource_packs", packDir);
-                log.info(`\t${pack.name}`);
+                _internalDebug && log.info(`\t${pack.name}`);
                 return pump(
                     [
                         src("./**/*", {
@@ -353,11 +367,12 @@ class MinecraftAddonBuilder {
     }
 
     createMCPacks(done) {
-        log.info("Creating .mcpack files");
+        _internalDebug && log.info("Creating .mcpack files");
         return this.foreachPack(
+            "createMCPacks",
             (pack, packDone) => {
                 const packZip = this.parseTemplate(this.templateMcPackName, pack);
-                log.info(`\t${pack.name}`);
+                _internalDebug && log.info(`\t${pack.name}`);
                 pump(
                     [
                         src("./**/*", {
@@ -378,7 +393,7 @@ class MinecraftAddonBuilder {
     }
 
     createMCAddon(done) {
-        log.info("Creating .mcaddon");
+        _internalDebug && log.info("Creating .mcaddon");
 
         pump(
             [
@@ -393,118 +408,100 @@ class MinecraftAddonBuilder {
         );
     }
 
-    configureEverythingForMe() {
-        const builder = this;
-        const tasks = {};
-        tasks.clean = function clean(done) {
-            return builder.cleanOutDir(done);
-        };
+    createSteps() {
+        
+        const properties = Object.getOwnPropertyNames( MinecraftAddonBuilder.prototype );
 
-        tasks.verifyMinecraftDataDirExists = series(
-            function determineMinecraftDataDirectory(done) {
-                return builder.determineMinecraftDataDirectory(done);
-            },
-            function verifyMinecraftDataDirExists(done) {
-                return builder.verifyMinecraftDataDirExists(done);
-            }
-        );
+        const steps = {};
 
-        tasks.installBehaviour = series(
-            tasks.verifyMinecraftDataDirExists,
-            function cleanBehavior(done) {
-                return builder.cleanBehavior(done);
-            },
-            function installBehavior(done) {
-                return builder.installBehavior(done);
-            }
-        );
+        for (const key of properties) {
+            if (key === "constructor") continue;
 
-        tasks.installResources = series(
-            tasks.verifyMinecraftDataDirExists,
-            function cleanResources(done) {
-                return builder.cleanResources(done);
-            },
-            function installResources(done) {
-                return builder.installResources(done);
-            }
-        );
+            steps[key] = this[key].bind(this);
+            steps[key].displayName = key;
+        }
 
-        tasks.determinePacks = function determinePacks(done) {
-            return builder.determinePacks(done);
-        };
+        this._plugins.forEach(plugin => plugin.addDefaultTasks && plugin.addDefaultTasks(steps));
 
-        tasks.buildSource = function buildSource(done) {
-            return builder.source(done);
-        };
-
-        tasks.build = series(
-            tasks.determinePacks,
-            tasks.buildSource
-        );
-
-        this._plugins.forEach(plugin => plugin.addDefaultTasks && plugin.addDefaultTasks(tasks));
-
-        tasks.rebuild = series(
-            tasks.clean,
-            tasks.build
-        );
-
-        tasks.package = series(
-            tasks.rebuild,
-            function createMCPacks(done) {
-                return builder.createMCPacks(done);
-            },
-            function createMCAddon(done) {
-                return builder.createMCAddon(done);
-            }
-        );
-
-        tasks.install = series(
-            tasks.determinePacks,
-            tasks.build,
-            parallel(
-                tasks.installBehaviour,
-                tasks.installResources
-            )
-        );
-
-        tasks.uninstall = series(
-            tasks.verifyMinecraftDataDirExists,
-            parallel(
-                function cleanResources(done) {
-                    return builder.cleanResources(done);
-                },
-                function cleanBehavior(done) {
-                    return builder.cleanBehavior(done);
-                }
-            )
-        );
-
-        tasks.default = series(tasks.install);
-
-        const notify = function notify(done) {
+        steps.notify = function notify(done) {
             log.info("File Changed\n");
             done();
         };
 
-        tasks.watchLoop = series(
-            notify,
-            tasks.install
+        return steps;
+    }
+
+    createTasks(steps) {
+        const builder = this;
+        const tasks = {};
+
+        tasks.build = series(
+            steps.determinePacks,
+            steps.buildSource
+        );
+
+        tasks.rebuild = series(
+            steps.clean,
+            steps.buildSource
+        );
+
+        tasks.package = series(
+            steps.clean,
+            steps.buildSource,
+            steps.createMCPacks,
+            steps.createMCAddon
+        );
+
+        tasks.install = series(
+            steps.determineMinecraftDataDirectory,
+            steps.determinePacks,
+            steps.buildSource,
+            parallel(
+                steps.installBehavior,
+                steps.installResources
+            )
+        );
+
+        tasks.uninstall = series(
+            steps.determineMinecraftDataDirectory,
+            parallel(
+                steps.cleanResources,
+                steps.cleanBehavior
+            )
+        );
+
+        tasks.default = tasks.install;
+
+        const watchLoop = series(
+            steps.notify,
+            steps.determinePacks,
+            steps.buildSource,
+            parallel(
+                steps.installBehavior,
+                steps.installResources
+            )
         );
 
         function watchFiles() {
             // normalize paths to posix format because globbing doesn't work with windows paths.
             // unfortunately path.join and path.resolve both change the path to windows format.
             const watchPath = normalize(path.join(path.resolve(builder.sourceDir), "**/*"));
-            return watch(watchPath, tasks.watchLoop);
+            return watch(watchPath, watchLoop);
         }
 
         tasks.watch = series(
-            tasks.clean,
-            tasks.watchLoop,
+            steps.determineMinecraftDataDirectory,
+            steps.clean,
+            watchLoop,
             watchFiles
         );
 
+        return tasks;
+    }
+
+    configureEverythingForMe() {
+        const steps = this.createSteps();
+        const tasks = this.createTasks(steps);
         return tasks;
     }
 }

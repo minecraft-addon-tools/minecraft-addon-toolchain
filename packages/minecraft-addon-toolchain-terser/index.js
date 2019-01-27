@@ -16,7 +16,7 @@ class UglifySupport {
 
     set builder(builder) {
         if (builder._version < 1) {
-            throw new Error("terser support requires using a minecraft-addon-toolchain with at least version 2 or higher");
+            throw new Error("terser support requires using a minecraft-addon-toolchain with at least version 1 or higher");
         }
     }
 }
