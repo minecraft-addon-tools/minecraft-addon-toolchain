@@ -29,7 +29,7 @@ class MinecraftModBuilder {
         log.warn("------------");
         log.warn("You are using the older V0 version of the toolchain.");
         log.warn("It is recommended that you update to the latest version. Please see the upgrade notes for details");
-        log.warn("https://minecraft-addon-tools.github.io/docs/Toolchain/upgrade-notes");
+        log.warn("https://minecraft-addon-tools.github.io/docs/Toolchain/upgrade-notes-v1");
         log.warn("------------");
     }
 
