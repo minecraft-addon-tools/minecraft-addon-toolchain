@@ -196,13 +196,13 @@ class MinecraftAddonBuilder {
      * @param {(plugin: IPlugin) => ITask[] | null} selector 
      * @returns {NodeJS.ReadWriteStream[]}
      */
-    getTasks(selector) {
+    getTasks(selector, args) {
         return this._plugins
             .map(plugin => selector(plugin) || [])
             .reduce((p, c) => p.concat(c), [])
             .map(action => {
                 const actions = [
-                    gulpIf(action.condition, action.task()),
+                    gulpIf(action.condition, action.task(args)),
                 ];
                 if (action.preventDefault) {
                     actions.push(exclude(action.condition));
@@ -242,14 +242,14 @@ class MinecraftAddonBuilder {
 
                 return pump(
                     [
-                        src(path.join(pack.relativePath, "./**/*"), {
-                            cwd: this.sourceDir
+                        src("./**/*", {
+                            cwd: path.join(this.sourceDir, pack.relativePath)
                         }),
-                        ...this.getTasks((plugin) => plugin.sourceTasks),
+                        ...this.getTasks((plugin) => plugin.sourceTasks, pack),
                         // tap(file => {
-                        //     log.info(file.path);
+                        //     _internalDebug && log.info(file.path);
                         // }),
-                        dest(this.bundleDir)
+                        dest(path.join(this.bundleDir, pack.relativePath))
                     ],
                     packDone
                 );

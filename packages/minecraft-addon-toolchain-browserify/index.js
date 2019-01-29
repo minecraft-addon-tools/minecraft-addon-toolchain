@@ -34,9 +34,9 @@ class BrowserifySupport {
             {
                 condition: "**/*.js",
                 preventDefault: true,
-                task: () => tap((file, t) => {
+                task: (pack) => tap((file, t) => {
                     _this.browserifyOptions && _this.browserifyOptions.debug && log.info(`\tBrowserify: redirecting ${file.path}`);
-                    return t.through(dest, [this.intermediateDir]);
+                    return t.through(dest, [path.join(this.intermediateDir, pack.relativePath)]);
                 })
             }
         ];
