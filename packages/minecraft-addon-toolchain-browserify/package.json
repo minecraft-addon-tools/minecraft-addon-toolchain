@@ -1,6 +1,6 @@
 {
   "name": "minecraft-addon-toolchain-browserify",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Adds support for modern JavaScript to Minecraft's scripting engine",
   "main": "index.js",
   "repository": "github:minecraft-addon-tools/minecraft-scripting-toolchain.git",
@@ -30,7 +30,7 @@
     "gulp-if": "^2.0.2",
     "gulp-tap": "^1.0.1",
     "gulplog": "^1.0.0",
-    "minecraft-addon-toolchain": "^1.0.1",
+    "minecraft-addon-toolchain": "^1.0.2",
     "pump": "^3.0.0"
   },
   "devDependencies": {
