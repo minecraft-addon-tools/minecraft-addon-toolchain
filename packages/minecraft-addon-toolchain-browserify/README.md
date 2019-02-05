@@ -3,6 +3,8 @@
 ## Browserify
 Adds support for modern JavaScript features not supported by the Minecraft Scripting Engine, such as modules and multi-file projects.
 
+**By default, UI JavaScript files are not processed by browserify as these scripts typically can be loaded individually without needint to package them. If you wish to package your UI code, you should check the `bundleSources` and `entryPoints` configuration settings**
+
 ### Installing
 ```powershell
 npm install --save-dev minecraft-addon-toolchain-browserify
@@ -67,6 +69,9 @@ const browserifySupport = new BrowserifySupport();
 
 /// Change the entry point scripts that will be bundled.
 //browserifySupport.entryPoints = ["./scripts/client/*.js", "./scripts/server/*.js"];
+
+/// Add additional files to be bundled
+//browserifySupport.bundleSources = ["./scripts/**/*.js" ];
 
 builder.addPlugin(browserifySupport);
 

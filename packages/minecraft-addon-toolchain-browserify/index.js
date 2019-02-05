@@ -28,11 +28,12 @@ class BrowserifySupport {
         };
         this.intermediateDir = "./out/before-browserify";
         this.entryPoints = ["./scripts/client/*.js", "./scripts/server/*.js"];
+        this.bundleSources = ["./scripts/**/*.js" ];
 
         const _this = this;
         this.sourceTasks = [
             {
-                condition: "**/*.js",
+                condition: this.bundleSources,
                 preventDefault: true,
                 task: (pack) => tap((file, t) => {
                     _this.browserifyOptions && _this.browserifyOptions.debug && log.info(`\tBrowserify: redirecting ${file.path}`);
