@@ -1,6 +1,6 @@
 interface IPlugin {
     //Use a property setter to verify version, etc.
-    browser?: MinecraftAddonBuilder;
+    builder?: MinecraftAddonBuilder;
 
     sourceTasks?: ITask[];
     installBehaviorTasks?: ITask[];
