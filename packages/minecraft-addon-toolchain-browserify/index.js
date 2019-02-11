@@ -27,8 +27,8 @@ class BrowserifySupport {
             compact: false
         };
         this.intermediateDir = "./out/before-browserify";
-        this.entryPoints = ["./scripts/client/*.js", "./scripts/server/*.js"];
-        this.bundleSources = ["./scripts/**/*.js" ];
+        this.entryPoints = ["scripts/client/*.js", "scripts/server/*.js"];
+        this.bundleSources = ["scripts/**/*.js" ];
 
         const _this = this;
         this.sourceTasks = [
@@ -51,7 +51,7 @@ class BrowserifySupport {
     }
 
     addDefaultTasks(gulpTasks) {
-        const browserify = this._browserify.bind(this)
+        const browserify = this._browserify.bind(this);
         browserify.displayName = "browserify";
 
         gulpTasks.buildSource = series(

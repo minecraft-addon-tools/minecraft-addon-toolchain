@@ -68,10 +68,10 @@ const browserifySupport = new BrowserifySupport();
 //browserifySupport.intermediateDir = "./out/before-browserify";
 
 /// Change the entry point scripts that will be bundled.
-//browserifySupport.entryPoints = ["./scripts/client/*.js", "./scripts/server/*.js"];
+//browserifySupport.entryPoints = ["scripts/client/*.js", "scripts/server/*.js"];
 
 /// Add additional files to be bundled
-//browserifySupport.bundleSources = ["./scripts/**/*.js" ];
+//browserifySupport.bundleSources = ["scripts/**/*.js" ];
 
 builder.addPlugin(browserifySupport);
 
