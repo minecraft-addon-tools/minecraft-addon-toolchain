@@ -23,8 +23,5 @@
     "gulp-terser": "^1.1.7",
     "gulplog": "^1.0.0",
     "minecraft-addon-toolchain": "^1.0.3"
-  },
-  "devDependencies": {
-    "eslint": "^5.11.1"
   }
 }

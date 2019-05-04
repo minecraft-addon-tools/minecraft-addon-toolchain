@@ -35,8 +35,5 @@
     "normalize-path": "^3.0.0",
     "pump": "^3.0.0",
     "sanitize-filename": "^1.6.1"
-  },
-  "devDependencies": {
-    "eslint": "^5.11.1"
   }
 }
