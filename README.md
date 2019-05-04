@@ -1,12 +1,14 @@
 # minecraft-addon-toolchain
 
 Helps with some common tasks when building a minecraft mod for Bedrock edition:
-* builds `.mcpack` and `.mcaddon` packages
-* installs the mod into Minecraft for Windows 10's development folders
-* watches for file changes and reinstalls as necessary
-* has extension points to do transpilation
+
+- builds `.mcpack` and `.mcaddon` packages
+- installs the mod into Minecraft for Windows 10's development folders
+- watches for file changes and reinstalls as necessary
+- has extension points to do transpilation
 
 ## Prerequisites
+
 | Software  | Minimum                                                 | Recommended                                               |
 | --------- | ------------------------------------------------------- | --------------------------------------------------------- |
 | Minecraft | Minecraft Bedrock Edition Beta                          | Minecraft Bedrock Edition Beta on your Windows 10 device  |
@@ -16,11 +18,13 @@ Helps with some common tasks when building a minecraft mod for Bedrock edition:
 Scripting in Minecraft is currently only officially supported on Windows 10 Bedrock Edition Beta, however there have been reports that users have been able to use alternative launchers to get scripting working on other platforms, and although the toolchain attempts to support Linux, Mac OS and Android, they are currently untested and support for these platforms is limited. (I am happy to take PRs to improve the experience)
 
 ### Getting the Bedrock Edition Beta
+
 Mojang provides instructions on how to get into the Beta program here: [How to get into Minecraft betas](https://minecraft.net/en-us/article/how-get-minecraft-betas)
 
-
 ## Getting Started
+
 Ensure you have a package.json file present in your development directory, if you do not, you can create a minimal valid package with the following contents:
+
 ```json
 {
   "private": true
@@ -28,6 +32,7 @@ Ensure you have a package.json file present in your development directory, if yo
 ```
 
 install the package (It's not currently available on NPM, you'll have to use the Github repository)
+
 ```
 npm install --save-dev minecraft-addon-toolchain
 ```
@@ -48,6 +53,7 @@ module.exports = modBuilder.configureEverythingForMe();
 The MinecraftAddonBuilder object can be used to create your own tasks, but the default tasks configured by `configureEverythingForMe()` should be sufficient for simple addons.
 
 Next, update your package.json with appropriate scripts, here are some useful scripts
+
 ```json
   "scripts": {
     "build": "gulp build",
@@ -57,14 +63,14 @@ Next, update your package.json with appropriate scripts, here are some useful sc
   },
 ```
 
-* use **npm run build** to create the directory structure for a .mcaddon
-* use **npm run installaddon** to install the addon into Minecraft for Windows 10
-* use **npm run rebuild** to clean the build directory and rebuild it
-* use **npm run watch** to:
-    * build the project
-    * deploy it to to Minecraft for Windows 10
-    * monitor for changes on the filesystem
-        * automatically rebuilds and deploys the project.
+- use **npm run build** to create the directory structure for a .mcaddon
+- use **npm run installaddon** to install the addon into Minecraft for Windows 10
+- use **npm run rebuild** to clean the build directory and rebuild it
+- use **npm run watch** to:
+  - build the project
+  - deploy it to to Minecraft for Windows 10
+  - monitor for changes on the filesystem
+    - automatically rebuilds and deploys the project.
 
 ## Conventions
 
@@ -77,6 +83,7 @@ These scripts will assume a certain directory structure by default. These can be
 | .\out\packaged | constructed .mcpack and .mcaddon files will be placed here                                                             | packageDir      |
 
 an example of changing the build directory would look something like this:
+
 ```javascript
 const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 
@@ -86,6 +93,7 @@ builder.packageDir = "./package";
 ```
 
 ## Using plugins
+
 We provide the following plugins.
 
 Because plugins insert themselves into the toolchain, their order is dependent. Refer to their individual read me files for installation and usage.

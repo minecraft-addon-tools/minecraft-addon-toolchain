@@ -1,3 +1,3 @@
 export class TestClass {
-    constructor(public name: string) {}
+  constructor(public name: string) {}
 }
