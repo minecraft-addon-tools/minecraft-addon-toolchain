@@ -1,23 +1,23 @@
 {
-  "format_version": 1,
-  "header": {
-    "name": "ToolchainTest-Behaviors1",
-    "description": "Modifying the Toolchain",
-    "uuid": "03aedb47-5c56-48f2-902e-e9a5360a6dcf",
-    "version": [1, 0, 0]
-  },
-  "modules": [
-    {
-      "description": "behaviours for ToolchainTest",
-      "type": "client_data",
-      "uuid": "0bf9352c-ee15-4264-b872-acdb71817c60",
-      "version": [1, 0, 0]
-    }
-  ],
-  "dependencies": [
-    {
-      "uuid": "cffa6108-f9af-4c75-bb23-e51007611376",
-      "version": [1, 0, 0]
-    }
-  ]
+    "format_version": 1,
+    "header": {
+        "name": "ToolchainTest-Behaviors1",
+        "description": "Modifying the Toolchain",
+        "uuid": "03aedb47-5c56-48f2-902e-e9a5360a6dcf",
+        "version": [1, 0, 0]
+    },
+    "modules": [
+        {
+            "description": "behaviours for ToolchainTest",
+            "type": "client_data",
+            "uuid": "0bf9352c-ee15-4264-b872-acdb71817c60",
+            "version": [1, 0, 0]
+        }
+    ],
+    "dependencies": [
+        {
+            "uuid": "cffa6108-f9af-4c75-bb23-e51007611376",
+            "version": [1, 0, 0]
+        }
+    ]
 }

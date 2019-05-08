@@ -2,10 +2,10 @@
 
 Helps with some common tasks when building a minecraft mod for Bedrock edition:
 
-- builds `.mcpack` and `.mcaddon` packages
-- installs the mod into Minecraft for Windows 10's development folders
-- watches for file changes and reinstalls as necessary
-- has extension points to do transpilation
+-   builds `.mcpack` and `.mcaddon` packages
+-   installs the mod into Minecraft for Windows 10's development folders
+-   watches for file changes and reinstalls as necessary
+-   has extension points to do transpilation
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ Ensure you have a package.json file present in your development directory, if yo
 
 ```json
 {
-  "private": true
+    "private": true
 }
 ```
 
@@ -63,14 +63,14 @@ Next, update your package.json with appropriate scripts, here are some useful sc
   },
 ```
 
-- use **npm run build** to create the directory structure for a .mcaddon
-- use **npm run installaddon** to install the addon into Minecraft for Windows 10
-- use **npm run rebuild** to clean the build directory and rebuild it
-- use **npm run watch** to:
-  - build the project
-  - deploy it to to Minecraft for Windows 10
-  - monitor for changes on the filesystem
-    - automatically rebuilds and deploys the project.
+-   use **npm run build** to create the directory structure for a .mcaddon
+-   use **npm run installaddon** to install the addon into Minecraft for Windows 10
+-   use **npm run rebuild** to clean the build directory and rebuild it
+-   use **npm run watch** to:
+    -   build the project
+    -   deploy it to to Minecraft for Windows 10
+    -   monitor for changes on the filesystem
+        -   automatically rebuilds and deploys the project.
 
 ## Conventions
 
