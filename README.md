@@ -27,7 +27,7 @@ Ensure you have a package.json file present in your development directory, if yo
 
 ```json
 {
-    "private": true
+	"private": true
 }
 ```
 

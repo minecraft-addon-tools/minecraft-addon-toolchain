@@ -1,10 +1,10 @@
 // This file keeps IDEs happy, it is not used for compilation
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-        "module": "ES6",
-        "noImplicitAny": true,
-        "rootDir": "./src"
-    },
-    "include": ["src/behaviors/scripts/*/*"]
+	"compileOnSave": false,
+	"compilerOptions": {
+		"module": "ES6",
+		"noImplicitAny": true,
+		"rootDir": "./src"
+	},
+	"include": ["src/behaviors/scripts/*/*"]
 }
