@@ -1,16 +1,19 @@
 # minecraft-addon-toolchain-browserify
 
 ## Browserify
+
 Adds support for modern JavaScript features not supported by the Minecraft Scripting Engine, such as modules and multi-file projects.
 
 **By default, UI JavaScript files are not processed by browserify as these scripts typically can be loaded individually without needint to package them. If you wish to package your UI code, you should check the `bundleSources` and `entryPoints` configuration settings**
 
 ### Installing
+
 ```powershell
 npm install --save-dev minecraft-addon-toolchain-browserify
 ```
 
 ### Adding to the toolchain
+
 ```javascript
 const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 const BrowserifySupport = require("minecraft-addon-toolchain-browserify");
@@ -22,18 +25,23 @@ module.exports = builder.configureEverythingForMe();
 ```
 
 ### Usage
+
 You can create additional files using ES6 module support, exporting and importing from other files and NPM packages.
 
 An example of this might be
 
 `./scripts/util/maths.js`
+
 ```javascript
 export function squareDistance(x1, y1, z1, x2, y2, z2) {
-    return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1);
+	return (
+		(x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1)
+	);
 }
 ```
 
 `./scripts/server/server.js`
+
 ```javascript
 import { squareDistance } from "../util/maths"
 
@@ -46,6 +54,7 @@ system.update = function() {
 ```
 
 ### Configuration
+
 You can override the settings passed to Babelify any of the following settings the BrowserifySupport object.
 
 ```javascript

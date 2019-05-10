@@ -3,6 +3,27 @@
   "private": true,
   "license": "MIT",
   "devDependencies": {
-    "lerna": "^3.5.1"
+    "eslint-config-prettier": "^4.2.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint": "^5.11.1",
+    "husky": "1.3.1",
+    "lerna": "^3.5.1",
+    "lint-staged": "8.1.5",
+    "prettier": "^1.17.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,ts,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "scripts": {
+    "format": "prettier --write '{,!(node_modules)/**/}*.{js,json,ts,md}'",
+    "lint": "eslint --ext .js,.ts ."
   }
 }
