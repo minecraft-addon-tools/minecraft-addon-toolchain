@@ -23,7 +23,7 @@
   "dependencies": {
     "del": "^3.0.0",
     "es6-dynamic-template": "^1.0.5",
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "gulp-if": "^2.0.2",
     "gulp-ignore": "^2.0.2",

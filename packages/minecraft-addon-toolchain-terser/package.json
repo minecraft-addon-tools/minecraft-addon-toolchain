@@ -19,8 +19,8 @@
   "author": "Steven Blom",
   "license": "MIT",
   "dependencies": {
-    "gulp": "^4.0.0",
-    "gulp-terser": "^1.1.7",
+    "gulp": "^4.0.2",
+    "gulp-terser": "^1.2.0",
     "gulplog": "^1.0.0",
     "minecraft-addon-toolchain": "^1.0.3"
   }
