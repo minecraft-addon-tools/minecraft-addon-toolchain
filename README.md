@@ -47,7 +47,7 @@ use the following as a template for your gulpfile.js, replacing `<youraddonname>
 const MinecraftAddonBuilder = require("minecraft-addon-toolchain/v1");
 
 const builder = new MinecraftAddonBuilder(<youraddonname>);
-module.exports = modBuilder.configureEverythingForMe();
+module.exports = builder.configureEverythingForMe();
 ```
 
 The MinecraftAddonBuilder object can be used to create your own tasks, but the default tasks configured by `configureEverythingForMe()` should be sufficient for simple addons.
