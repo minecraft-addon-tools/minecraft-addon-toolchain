@@ -1,3 +1,7 @@
+# Notice
+
+Mojang has deprecated the bedrock scripting API in favour of the GameTest API. This repository has been archived as a a result.
+
 # minecraft-addon-toolchain
 
 Helps with some common tasks when building a minecraft mod for Bedrock edition:
